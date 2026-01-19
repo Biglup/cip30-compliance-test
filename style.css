@@ -616,6 +616,10 @@ textarea {
     transition: color var(--transition-fast);
 }
 
+.footer a span {
+    line-height: 32px;
+}
+
 .footer a:hover {
     color: var(--text-primary);
 }
@@ -623,8 +627,9 @@ textarea {
 .cometa-logo {
     height: 32px;
     width: auto;
-    filter: brightness(1.5);
+    filter: brightness(1.75);
     transition: filter var(--transition-fast);
+    transform: translateY(-4px);
 }
 
 .footer a:hover .cometa-logo {
