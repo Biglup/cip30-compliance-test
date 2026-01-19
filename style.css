@@ -72,6 +72,135 @@ body {
     min-height: 100vh;
 }
 
+/* App Layout */
+.app-layout {
+    min-height: 100vh;
+}
+
+.main-content {
+    min-height: 100vh;
+}
+
+/* Log Sidebar - Left Side */
+.log-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 400px;
+    height: 100vh;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+    transform: translateX(0);
+    transition: transform var(--transition-normal);
+}
+
+.log-sidebar.collapsed,
+.log-sidebar.auto-collapsed {
+    transform: translateX(-100%);
+}
+
+/* Expand tab - visible when sidebar is collapsed */
+.log-expand-tab {
+    position: fixed;
+    top: var(--spacing-md);
+    left: 0;
+    z-index: 999;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-left: none;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: var(--spacing-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.log-sidebar.collapsed ~ .main-content .log-expand-tab,
+.log-sidebar.auto-collapsed ~ .main-content .log-expand-tab {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.log-expand-tab:hover {
+    background: var(--bg-input);
+    color: var(--text-primary);
+    border-color: var(--primary-color);
+}
+
+.log-expand-tab svg {
+    width: 20px;
+    height: 20px;
+}
+
+.log-expand-tab span {
+    display: none;
+}
+
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.log-header h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.log-sidebar .log-controls {
+    display: flex;
+    gap: var(--spacing-xs);
+    margin: 0;
+}
+
+.log-sidebar #log-output {
+    flex: 1;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    height: auto;
+    background: var(--bg-primary);
+}
+
+/* Close button in header */
+.log-close-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.log-close-btn:hover {
+    background: var(--danger-color);
+    border-color: var(--danger-color);
+    color: white;
+}
+
+.log-close-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
 /* Container */
 .container {
     max-width: 1000px;
@@ -248,6 +377,7 @@ textarea {
     flex-wrap: wrap;
     gap: var(--spacing-sm);
     margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
 }
 
 .btn {
@@ -425,16 +555,6 @@ textarea {
 }
 
 /* Log Output */
-#log-section {
-    background: var(--bg-secondary);
-}
-
-.log-controls {
-    display: flex;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-md);
-}
-
 #log-output {
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
@@ -443,7 +563,6 @@ textarea {
     font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
     font-size: 0.75rem;
     color: var(--text-secondary);
-    height: 250px;
     overflow-y: auto;
     white-space: pre-wrap;
     word-break: break-word;
@@ -504,6 +623,12 @@ textarea {
 .cometa-logo {
     height: 32px;
     width: auto;
+    filter: brightness(1.5);
+    transition: filter var(--transition-fast);
+}
+
+.footer a:hover .cometa-logo {
+    filter: brightness(1.8);
 }
 
 /* Utilities */
@@ -542,6 +667,13 @@ textarea {
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+    .log-sidebar {
+        width: 100%;
+        max-width: 400px;
+    }
+}
+
 @media (max-width: 768px) {
     .container {
         padding: var(--spacing-md);
@@ -569,5 +701,10 @@ textarea {
 
     .button-group .btn {
         width: 100%;
+    }
+
+    .log-sidebar {
+        width: 100%;
+        max-width: none;
     }
 }

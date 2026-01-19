@@ -129,6 +129,9 @@ export const signRawTx = document.getElementById('sign-raw-tx');
 export const logOutput = document.getElementById('log-output');
 export const clearLogBtn = document.getElementById('clear-log-btn');
 export const copyLogBtn = document.getElementById('copy-log-btn');
+export const logSidebar = document.getElementById('log-section');
+export const toggleLogBtn = document.getElementById('toggle-log-btn');
+export const closeLogBtn = document.getElementById('close-log-btn');
 
 /**
  * Log a message to the activity log
@@ -344,3 +347,39 @@ export const updateWalletSelect = (wallets) => {
 // Initialize log control buttons
 clearLogBtn?.addEventListener('click', clearLog);
 copyLogBtn?.addEventListener('click', copyLog);
+
+/**
+ * Show log sidebar
+ */
+export const showLogSidebar = () => {
+    logSidebar.classList.remove('collapsed', 'auto-collapsed');
+};
+
+/**
+ * Hide log sidebar
+ */
+export const hideLogSidebar = () => {
+    logSidebar.classList.add('collapsed');
+};
+
+/**
+ * Handle responsive auto-collapse
+ */
+const handleResponsiveCollapse = () => {
+    const isSmallScreen = window.innerWidth <= 1024;
+    if (isSmallScreen && !logSidebar.classList.contains('collapsed')) {
+        logSidebar.classList.add('auto-collapsed');
+    } else if (!isSmallScreen) {
+        logSidebar.classList.remove('auto-collapsed');
+    }
+};
+
+// Initialize log sidebar toggle
+toggleLogBtn?.addEventListener('click', showLogSidebar);
+closeLogBtn?.addEventListener('click', hideLogSidebar);
+
+// Handle responsive behavior
+window.addEventListener('resize', handleResponsiveCollapse);
+
+// Initial check for screen size
+handleResponsiveCollapse();

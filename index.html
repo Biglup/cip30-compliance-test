@@ -7,12 +7,37 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>CIP-30 Compliance Testing Tool</h1>
-            <p class="subtitle">Test Cardano wallet CIP-30, CIP-95, and CIP-142 implementations</p>
-            <a href="https://github.com/Biglup/cip30-compliance-test" target="_blank" class="github-link">View on GitHub</a>
-        </header>
+    <div class="app-layout">
+        <!-- Activity Log Sidebar -->
+        <aside class="log-sidebar" id="log-section">
+            <div class="log-header">
+                <h2>Activity Log</h2>
+                <div class="log-controls">
+                    <button id="clear-log-btn" class="btn btn-secondary btn-small">Clear</button>
+                    <button id="copy-log-btn" class="btn btn-secondary btn-small">Copy</button>
+                    <button id="close-log-btn" class="log-close-btn" title="Hide Activity Log">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <pre id="log-output">Initializing CIP-30 Compliance Testing Tool...</pre>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <button id="toggle-log-btn" class="log-expand-tab" title="Show Activity Log">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            <div class="container">
+                <header class="header">
+                    <h1>CIP-30 Compliance Testing Tool</h1>
+                    <p class="subtitle">Test Cardano wallet CIP-30, CIP-95, and CIP-142 implementations</p>
+                    <a href="https://github.com/Biglup/cip30-compliance-test" target="_blank" class="github-link">View on GitHub</a>
+                </header>
 
         <!-- Section 1: Wallet Connection -->
         <section class="card" id="connection-section">
@@ -432,22 +457,14 @@
             <div class="test-result large" id="result-raw-tx"></div>
         </section>
 
-        <!-- Log Output -->
-        <section class="card" id="log-section">
-            <h2>Activity Log</h2>
-            <div class="log-controls">
-                <button id="clear-log-btn" class="btn btn-secondary btn-small">Clear Log</button>
-                <button id="copy-log-btn" class="btn btn-secondary btn-small">Copy Log</button>
-            </div>
-            <pre id="log-output">Initializing CIP-30 Compliance Testing Tool...</pre>
-        </section>
-
         <footer class="footer">
             <a href="https://github.com/Biglup/cometa.js" target="_blank">
                 <span>Powered by</span>
                 <img src="images/cometa_js.png" alt="Cometa.js" class="cometa-logo">
             </a>
         </footer>
+            </div>
+        </div>
     </div>
 
     <!-- Cometa.js CDN -->
