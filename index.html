@@ -129,7 +129,7 @@
                 <input type="text" id="sign-data-address" placeholder="addr_test1...">
             </div>
             <div class="button-group">
-                <button id="test-signData" class="btn btn-test">signData()</button>
+                <button id="test-signData" class="btn btn-test">Sign Data</button>
             </div>
             <div class="test-result large" id="result-signData"></div>
         </section>
@@ -208,10 +208,10 @@
             </div>
         </section>
 
-        <!-- Section 8: Governance Transaction Tests -->
+        <!-- Section 8: Governance & Staking -->
         <section class="card hidden" id="gov-tx-section">
-            <h2>8. Governance Transaction Tests</h2>
-            <p class="section-description">Test Conway era governance transactions</p>
+            <h2>8. Governance & Staking</h2>
+            <p class="section-description">Stake registration, delegation, DRep registration, and voting</p>
 
             <!-- Stake Status Query -->
             <div class="tx-test-card highlight">
@@ -277,6 +277,64 @@
                     <button id="submit-stake-deleg-tx" class="btn btn-primary" disabled>Submit Transaction</button>
                 </div>
                 <div class="test-result large" id="result-stake-deleg-tx"></div>
+            </div>
+
+            <!-- Register DRep -->
+            <div class="tx-test-card">
+                <h3>Register as DRep</h3>
+                <p class="test-description">Register your wallet as a Delegated Representative (requires CIP-95)</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="drep-metadata-url">Metadata URL (optional):</label>
+                        <input type="text" id="drep-metadata-url" placeholder="https://example.com/drep.jsonld">
+                    </div>
+                    <div class="form-group">
+                        <label for="drep-metadata-hash">Metadata Hash (optional):</label>
+                        <input type="text" id="drep-metadata-hash" placeholder="64 hex characters">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="build-drep-reg-tx" class="btn btn-test">Build Registration Tx</button>
+                    <button id="sign-drep-reg-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-drep-reg-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-drep-reg-tx"></div>
+            </div>
+
+            <!-- Deregister DRep -->
+            <div class="tx-test-card">
+                <h3>Deregister as DRep</h3>
+                <p class="test-description">Deregister as a DRep and reclaim deposit</p>
+                <div class="button-group">
+                    <button id="build-drep-dereg-tx" class="btn btn-test">Build Deregistration Tx</button>
+                    <button id="sign-drep-dereg-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-drep-dereg-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-drep-dereg-tx"></div>
+            </div>
+
+            <!-- Vote on Proposal -->
+            <div class="tx-test-card">
+                <h3>Vote on Governance Proposal</h3>
+                <p class="test-description">Cast a vote on a governance action (must be registered as DRep)</p>
+                <div class="form-group">
+                    <label for="gov-action-id">Governance Action ID (bech32):</label>
+                    <input type="text" id="gov-action-id" placeholder="gov_action1..." value="gov_action1u8gafgcskj6sqvgwqse7adc0h9438m535lg97czcvxntscvw7f5sqgf2n7j">
+                </div>
+                <div class="form-group">
+                    <label for="vote-choice">Vote:</label>
+                    <select id="vote-choice">
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="abstain">Abstain</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button id="build-vote-tx" class="btn btn-test">Build Vote Tx</button>
+                    <button id="sign-vote-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-vote-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-vote-tx"></div>
             </div>
         </section>
 
@@ -378,73 +436,9 @@
             </div>
         </section>
 
-        <!-- Section 11: DRep & Voting Tests -->
-        <section class="card hidden" id="voting-section">
-            <h2>11. DRep & Voting Tests</h2>
-            <p class="section-description">Register as a DRep and vote on governance proposals</p>
-
-            <!-- Register DRep -->
-            <div class="tx-test-card">
-                <h3>Register as DRep</h3>
-                <p class="test-description">Register your wallet as a Delegated Representative (requires CIP-95)</p>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="drep-metadata-url">Metadata URL (optional):</label>
-                        <input type="text" id="drep-metadata-url" placeholder="https://example.com/drep.jsonld">
-                    </div>
-                    <div class="form-group">
-                        <label for="drep-metadata-hash">Metadata Hash (optional):</label>
-                        <input type="text" id="drep-metadata-hash" placeholder="64 hex characters">
-                    </div>
-                </div>
-                <div class="button-group">
-                    <button id="build-drep-reg-tx" class="btn btn-test">Build Registration Tx</button>
-                    <button id="sign-drep-reg-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
-                    <button id="submit-drep-reg-tx" class="btn btn-primary" disabled>Submit Transaction</button>
-                </div>
-                <div class="test-result large" id="result-drep-reg-tx"></div>
-            </div>
-
-            <!-- Deregister DRep -->
-            <div class="tx-test-card">
-                <h3>Deregister as DRep</h3>
-                <p class="test-description">Deregister as a DRep and reclaim deposit</p>
-                <div class="button-group">
-                    <button id="build-drep-dereg-tx" class="btn btn-test">Build Deregistration Tx</button>
-                    <button id="sign-drep-dereg-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
-                    <button id="submit-drep-dereg-tx" class="btn btn-primary" disabled>Submit Transaction</button>
-                </div>
-                <div class="test-result large" id="result-drep-dereg-tx"></div>
-            </div>
-
-            <!-- Vote on Proposal -->
-            <div class="tx-test-card">
-                <h3>Vote on Governance Proposal</h3>
-                <p class="test-description">Cast a vote on a governance action (must be registered as DRep)</p>
-                <div class="form-group">
-                    <label for="gov-action-id">Governance Action ID (bech32):</label>
-                    <input type="text" id="gov-action-id" placeholder="gov_action1..." value="gov_action1u8gafgcskj6sqvgwqse7adc0h9438m535lg97czcvxntscvw7f5sqgf2n7j">
-                </div>
-                <div class="form-group">
-                    <label for="vote-choice">Vote:</label>
-                    <select id="vote-choice">
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
-                        <option value="abstain">Abstain</option>
-                    </select>
-                </div>
-                <div class="button-group">
-                    <button id="build-vote-tx" class="btn btn-test">Build Vote Tx</button>
-                    <button id="sign-vote-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
-                    <button id="submit-vote-tx" class="btn btn-primary" disabled>Submit Transaction</button>
-                </div>
-                <div class="test-result large" id="result-vote-tx"></div>
-            </div>
-        </section>
-
-        <!-- Section 12: Raw Transaction Signing -->
+        <!-- Section 11: Raw Transaction Signing -->
         <section class="card hidden" id="raw-tx-section">
-            <h2>12. Raw Transaction Signing</h2>
+            <h2>11. Raw Transaction Signing</h2>
             <p class="section-description">Sign a raw transaction CBOR hex</p>
             <div class="form-group">
                 <label for="raw-tx-cbor">Transaction CBOR (hex):</label>

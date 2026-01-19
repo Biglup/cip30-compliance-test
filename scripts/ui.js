@@ -105,7 +105,6 @@ export const signPlutusMintTx = document.getElementById('sign-plutus-mint-tx');
 export const submitPlutusMintTx = document.getElementById('submit-plutus-mint-tx');
 
 // Voting test elements
-export const votingSection = document.getElementById('voting-section');
 export const drepMetadataUrl = document.getElementById('drep-metadata-url');
 export const drepMetadataHash = document.getElementById('drep-metadata-hash');
 export const buildDRepRegTx = document.getElementById('build-drep-reg-tx');
@@ -278,7 +277,6 @@ export const showTestSections = () => {
     govTxSection.classList.remove('hidden');
     scriptSection.classList.remove('hidden');
     mintSection.classList.remove('hidden');
-    votingSection.classList.remove('hidden');
     rawTxSection.classList.remove('hidden');
 };
 
@@ -295,7 +293,6 @@ export const hideTestSections = () => {
     govTxSection.classList.add('hidden');
     scriptSection.classList.add('hidden');
     mintSection.classList.add('hidden');
-    votingSection.classList.add('hidden');
     rawTxSection.classList.add('hidden');
 };
 
