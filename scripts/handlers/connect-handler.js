@@ -66,7 +66,6 @@ export const connectWallet = async (walletName, network) => {
 
     // Check extension support
     const extensionSupport = checkExtensionSupport(walletApi);
-    ui.log(`Extension support - CIP-95: ${extensionSupport.cip95}, CIP-142: ${extensionSupport.cip142}`, 'info');
 
     // Build extensions array for enable()
     const extensions = [];
@@ -78,7 +77,6 @@ export const connectWallet = async (walletName, network) => {
     }
 
     // Enable wallet with extensions
-    ui.log('Requesting wallet access...', 'info');
     let cip30Api;
     try {
         cip30Api = await walletApi.enable({
@@ -91,11 +89,8 @@ export const connectWallet = async (walletName, network) => {
         throw err;
     }
 
-    ui.log('Wallet access granted', 'success');
-
     // Create provider
     const provider = createProvider(network);
-    ui.log(`Provider created for ${network}`, 'info');
 
     // Create Cometa wallet wrapper
     const wallet = new Cometa.BrowserExtensionWallet(cip30Api, provider);
@@ -113,53 +108,32 @@ export const connectWallet = async (walletName, network) => {
         );
     }
 
-    ui.log(`Network validated: ${config.name} (ID: ${networkId})`, 'success');
-
     // Get initial address for display
-    // Note: CIP-30 API returns hex strings, Cometa wrapper may return Address objects
     const usedAddresses = await wallet.getUsedAddresses();
     let primaryAddress = '(no used addresses)';
 
     if (usedAddresses && usedAddresses.length > 0) {
         const firstAddr = usedAddresses[0];
-        // Handle both hex string and Address object
         if (typeof firstAddr === 'string') {
-            // It's a hex string, convert to Address then to string (bech32)
             primaryAddress = Cometa.Address.fromHex(firstAddr).toString();
         } else if (firstAddr.toString) {
-            // It's already an Address object
             primaryAddress = firstAddr.toString();
         } else {
             primaryAddress = String(firstAddr);
         }
     }
 
-    // Check which CIP extensions are actually available in the enabled API
-    // Log the API structure to help debug
-    ui.log(`CIP-30 API keys: ${Object.keys(cip30Api || {}).join(', ')}`, 'info');
-    if (cip30Api?.experimental) {
-        ui.log(`Experimental keys: ${Object.keys(cip30Api.experimental).join(', ')}`, 'info');
-    }
-    if (cip30Api?.cip95) {
-        ui.log(`CIP-95 keys: ${Object.keys(cip30Api.cip95).join(', ')}`, 'info');
-    }
-
+    // Check which CIP extensions are actually available
     const actualExtensions = {
         cip95: !!(cip30Api?.cip95 || cip30Api?.experimental?.cip95),
         cip142: !!(cip30Api?.cip142 || cip30Api?.experimental?.cip142),
     };
 
-    if (actualExtensions.cip95) {
-        ui.log('CIP-95 (Governance) extension available', 'success');
-    } else {
-        ui.log('CIP-95 (Governance) extension not available', 'warning');
-    }
-
-    if (actualExtensions.cip142) {
-        ui.log('CIP-142 (Network Magic) extension available', 'success');
-    } else {
-        ui.log('CIP-142 (Network Magic) extension not available', 'warning');
-    }
+    // Log connection summary
+    const extList = [];
+    if (actualExtensions.cip95) extList.push('CIP-95');
+    if (actualExtensions.cip142) extList.push('CIP-142');
+    ui.log(`Connected to ${config.name} (ID: ${networkId})${extList.length ? `, extensions: ${extList.join(', ')}` : ''}`, 'success');
 
     // Update state
     setState({
@@ -171,8 +145,6 @@ export const connectWallet = async (walletName, network) => {
         usedAddresses,
         extensions: actualExtensions,
     });
-
-    ui.log(`Successfully connected to ${walletName}`, 'success');
 
     return {
         walletName: walletApi.name || walletName,

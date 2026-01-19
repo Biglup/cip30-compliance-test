@@ -122,6 +122,7 @@ export const buildSimpleTransaction = async (recipientAddress, amountAda) => {
 
         // Store pending transaction
         setPendingTransaction('simple', unsignedTx);
+        ui.logCbor('Simple Transaction CBOR', unsignedTx);
 
         const details = formatTransaction(unsignedTx);
         let result = `Transaction Built Successfully\n\n${details}`;
@@ -158,7 +159,7 @@ export const signSimpleTransaction = async () => {
     }
 
     try {
-        const witnessSet = await state.wallet.signTransaction(unsignedTx, false);
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
         const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
 
         // Update pending transaction with signed version
@@ -256,6 +257,7 @@ export const buildSelfTransaction = async (amountAda) => {
             .build();
 
         setPendingTransaction('self', unsignedTx);
+        ui.logCbor('Self Transaction CBOR', unsignedTx);
 
         const details = formatTransaction(unsignedTx);
         let result = `Self-Transfer Transaction Built\n\n${details}`;
@@ -291,7 +293,7 @@ export const signSelfTransaction = async () => {
     }
 
     try {
-        const witnessSet = await state.wallet.signTransaction(unsignedTx, false);
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
         const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
 
         setPendingTransaction('self', signedTx);
@@ -376,6 +378,7 @@ export const buildStakeRegistrationTransaction = async () => {
             .build();
 
         setPendingTransaction('stakeReg', unsignedTx);
+        ui.logCbor('Stake Registration CBOR', unsignedTx);
 
         const details = formatTransaction(unsignedTx);
         let result = `Stake Registration Transaction Built\n\n${details}`;
@@ -411,7 +414,7 @@ export const signStakeRegistrationTransaction = async () => {
     }
 
     try {
-        const witnessSet = await state.wallet.signTransaction(unsignedTx, false);
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
         const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
 
         setPendingTransaction('stakeReg', signedTx);
@@ -497,6 +500,7 @@ export const buildVoteDelegationTransaction = async (drepId) => {
             .build();
 
         setPendingTransaction('voteDeleg', unsignedTx);
+        ui.logCbor('Vote Delegation CBOR', unsignedTx);
 
         const details = formatTransaction(unsignedTx);
         let result = `Vote Delegation Transaction Built\n\n${details}`;
@@ -532,7 +536,7 @@ export const signVoteDelegationTransaction = async () => {
     }
 
     try {
-        const witnessSet = await state.wallet.signTransaction(unsignedTx, false);
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
         const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
 
         setPendingTransaction('voteDeleg', signedTx);
@@ -618,6 +622,7 @@ export const buildStakeDelegationTransaction = async (poolId) => {
             .build();
 
         setPendingTransaction('stakeDeleg', unsignedTx);
+        ui.logCbor('Stake Delegation CBOR', unsignedTx);
 
         const details = formatTransaction(unsignedTx);
         let result = `Stake Delegation Transaction Built\n\n${details}`;
@@ -653,7 +658,7 @@ export const signStakeDelegationTransaction = async () => {
     }
 
     try {
-        const witnessSet = await state.wallet.signTransaction(unsignedTx, false);
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
         const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
 
         setPendingTransaction('stakeDeleg', signedTx);
@@ -735,6 +740,7 @@ export const buildStakeDeregistrationTransaction = async () => {
             .build();
 
         setPendingTransaction('stakeDereg', unsignedTx);
+        ui.logCbor('Stake Deregistration CBOR', unsignedTx);
 
         const details = formatTransaction(unsignedTx);
         let result = `Stake Deregistration Transaction Built\n\n${details}`;
@@ -770,7 +776,7 @@ export const signStakeDeregistrationTransaction = async () => {
     }
 
     try {
-        const witnessSet = await state.wallet.signTransaction(unsignedTx, false);
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
         const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
 
         setPendingTransaction('stakeDereg', signedTx);

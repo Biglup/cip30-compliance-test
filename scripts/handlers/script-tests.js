@@ -31,6 +31,23 @@ const ALWAYS_SUCCEEDS_NATIVE_SCRIPT = {
 };
 
 /**
+ * Create CIP-25 NFT metadata for a token
+ * @param {string} policyId - The policy ID of the token
+ * @param {string} tokenName - The name of the token
+ * @returns {Object} CIP-25 metadata object
+ */
+const createCip25Metadata = (policyId, tokenName) => ({
+    [policyId]: {
+        [tokenName]: {
+            name: tokenName,
+            image: 'ipfs://QmS7w3Q5oVL9NE1gJnsMVPp6fcxia1e38cRT5pE5mmxawL',
+            description: `Test token minted with CIP-30 Compliance Testing Tool`,
+            mediaType: 'image/png'
+        }
+    }
+});
+
+/**
  * Get the Plutus V3 script object
  */
 const getPlutusScript = () => ({
@@ -163,6 +180,7 @@ export const buildLockTransaction = async (amountAda) => {
             .build();
 
         setPendingTransaction('lock', unsignedTx);
+        ui.logCbor('Lock Transaction CBOR', unsignedTx);
 
         let result = `Lock Transaction Built\n\n`;
         result += `Amount: ${amountAda} ADA\n`;
@@ -195,7 +213,7 @@ export const signLockTransaction = async () => {
     }
 
     try {
-        const witnessSet = await state.wallet.signTransaction(unsignedTx, false);
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
         const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
 
         setPendingTransaction('lock', signedTx);
@@ -295,6 +313,7 @@ export const buildSpendTransaction = async (amountAda) => {
             .build();
 
         setPendingTransaction('spend', unsignedTx);
+        ui.logCbor('Spend Transaction CBOR', unsignedTx);
 
         const utxoCoins = utxos[0].output?.value?.coins || utxos[0].value?.coins || 0n;
         const utxoAda = Number(utxoCoins) / 1_000_000;
@@ -331,7 +350,7 @@ export const signSpendTransaction = async () => {
     }
 
     try {
-        const witnessSet = await state.wallet.signTransaction(unsignedTx, false);
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
         const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
 
         setPendingTransaction('spend', signedTx);
@@ -413,7 +432,11 @@ export const buildNativeMintTransaction = async (tokenName, amount) => {
 
         const builder = await state.wallet.createTransactionBuilder();
 
+        // Create CIP-25 metadata for the token
+        const cip25Metadata = createCip25Metadata(policyId, tokenName);
+
         const unsignedTx = await builder
+            .setMetadata({ metadata: cip25Metadata, tag: 721 })
             .mintToken({ amount: BigInt(amount), assetIdHex: assetId })
             .addScript(ALWAYS_SUCCEEDS_NATIVE_SCRIPT)
             .sendValue({
@@ -427,12 +450,14 @@ export const buildNativeMintTransaction = async (tokenName, amount) => {
             .build();
 
         setPendingTransaction('nativeMint', unsignedTx);
+        ui.logCbor('Native Mint Transaction CBOR', unsignedTx);
 
         let result = `Native Mint Transaction Built\n\n`;
         result += `Token: ${tokenName}\n`;
         result += `Amount: ${amount}\n`;
         result += `Policy ID: ${policyId.substring(0, 32)}...\n`;
-        result += `Script Type: Native (Time-locked)`;
+        result += `Script Type: Native (Time-locked)\n`;
+        result += `CIP-25 Metadata: Attached`;
 
         ui.setTestResult('native-mint-tx', result, 'success');
         ui.log('Native mint transaction built', 'success');
@@ -463,7 +488,7 @@ export const signNativeMintTransaction = async () => {
     }
 
     try {
-        const witnessSet = await state.wallet.signTransaction(unsignedTx, false);
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
         const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
 
         setPendingTransaction('nativeMint', signedTx);
@@ -546,7 +571,11 @@ export const buildPlutusMintTransaction = async (tokenName, amount) => {
 
         const builder = await state.wallet.createTransactionBuilder();
 
+        // Create CIP-25 metadata for the token
+        const cip25Metadata = createCip25Metadata(policyId, tokenName);
+
         const unsignedTx = await builder
+            .setMetadata({ metadata: cip25Metadata, tag: 721 })
             .mintToken({
                 amount: BigInt(amount),
                 assetIdHex: assetId,
@@ -564,13 +593,15 @@ export const buildPlutusMintTransaction = async (tokenName, amount) => {
             .build();
 
         setPendingTransaction('plutusMint', unsignedTx);
+        ui.logCbor('Plutus Mint Transaction CBOR', unsignedTx);
 
         let result = `Plutus Mint Transaction Built\n\n`;
         result += `Token: ${tokenName}\n`;
         result += `Amount: ${amount}\n`;
         result += `Policy ID: ${policyId.substring(0, 32)}...\n`;
         result += `Script Type: Plutus V3\n`;
-        result += `Redeemer: Empty constructor`;
+        result += `Redeemer: Empty constructor\n`;
+        result += `CIP-25 Metadata: Attached`;
 
         ui.setTestResult('plutus-mint-tx', result, 'success');
         ui.log('Plutus mint transaction built', 'success');
@@ -601,7 +632,7 @@ export const signPlutusMintTransaction = async () => {
     }
 
     try {
-        const witnessSet = await state.wallet.signTransaction(unsignedTx, false);
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
         const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
 
         setPendingTransaction('plutusMint', signedTx);

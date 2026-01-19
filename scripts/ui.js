@@ -134,6 +134,12 @@ export const toggleLogBtn = document.getElementById('toggle-log-btn');
 export const closeLogBtn = document.getElementById('close-log-btn');
 
 /**
+ * Convert BigInt values to strings for JSON serialization
+ */
+const bigIntReplacer = (key, value) =>
+    typeof value === 'bigint' ? value.toString() : value;
+
+/**
  * Log a message to the activity log
  * @param {string} message - Message to log
  * @param {string} type - Log type: 'info', 'success', 'error', 'warning'
@@ -155,6 +161,38 @@ export const log = (message, type = 'info') => {
     entry.appendChild(msgSpan);
     logOutput.appendChild(entry);
     logOutput.scrollTop = logOutput.scrollHeight;
+};
+
+/**
+ * Log a JSON object to the activity log
+ * @param {string} label - Label for the object
+ * @param {Object} obj - Object to log
+ * @param {string} type - Log type
+ */
+export const logJson = (label, obj, type = 'info') => {
+    try {
+        const json = JSON.stringify(obj, bigIntReplacer, 2);
+        log(`${label}:\n${json}`, type);
+    } catch (err) {
+        log(`${label}: [Unable to serialize: ${err.message}]`, 'warning');
+    }
+};
+
+/**
+ * Log a CBOR transaction hex
+ * @param {string} label - Label for the transaction
+ * @param {string} cbor - CBOR hex string
+ * @param {string} type - Log type
+ */
+export const logCbor = (label, cbor, type = 'info') => {
+    if (!cbor) {
+        log(`${label}: [No CBOR data]`, 'warning');
+        return;
+    }
+    // Show truncated CBOR with length
+    const len = cbor.length;
+    const preview = len > 120 ? `${cbor.substring(0, 60)}...${cbor.substring(len - 60)}` : cbor;
+    log(`${label} (${len} chars):\n${preview}`, type);
 };
 
 /**

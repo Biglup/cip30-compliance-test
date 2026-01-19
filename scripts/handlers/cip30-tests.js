@@ -101,20 +101,8 @@ export const testGetBalance = async () => {
     ui.log('Testing getBalance()...', 'info');
 
     try {
-        // Use Cometa wallet wrapper - it returns a proper Value object
         const balance = await state.wallet.getBalance();
-
-        ui.log(`Balance object type: ${typeof balance}`, 'info');
-        ui.log(`Balance object: ${JSON.stringify(balance, (k, v) => typeof v === 'bigint' ? v.toString() : v, 2).substring(0, 500)}`, 'info');
-
-        if (balance && typeof balance === 'object') {
-            ui.log(`Balance keys: ${Object.keys(balance).join(', ')}`, 'info');
-            // Check for nested structures
-            for (const key of Object.keys(balance)) {
-                const val = balance[key];
-                ui.log(`  balance.${key} = ${typeof val === 'object' ? JSON.stringify(val, (k, v) => typeof v === 'bigint' ? v.toString() : v).substring(0, 100) : val}`, 'info');
-            }
-        }
+        ui.logJson('Balance', balance);
 
         // Extract lovelace - Cometa uses "coins" as a string
         let lovelace = 0n;
@@ -204,12 +192,7 @@ export const testGetUtxos = async () => {
             return [];
         }
 
-        ui.log(`Got ${utxos.length} UTxOs from Cometa wrapper`, 'info');
-
-        // Log structure of first UTxO to understand the format
-        if (utxos[0]) {
-            ui.log(`First UTxO: ${JSON.stringify(utxos[0], (k, v) => typeof v === 'bigint' ? v.toString() : v, 2).substring(0, 800)}`, 'info');
-        }
+        ui.logJson('UTxOs', utxos);
 
         let result = `Total UTxOs: ${utxos.length}\n`;
 
@@ -421,13 +404,7 @@ export const testGetRewardAddresses = async () => {
 
     try {
         // Use raw CIP-30 API to get hex strings directly
-        // Cometa's wrapper has issues converting reward addresses
         const addressesHex = await state.cip30Api.getRewardAddresses();
-
-        ui.log(`Raw CIP-30 returned ${addressesHex?.length || 0} reward addresses`, 'info');
-        if (addressesHex?.[0]) {
-            ui.log(`First reward addr (hex): ${addressesHex[0].substring(0, 50)}...`, 'info');
-        }
 
         if (!addressesHex || addressesHex.length === 0) {
             ui.setTestResult('getRewardAddresses', 'No reward addresses found.\n\nNote: This may indicate no stake key is associated with the wallet.', 'warning');

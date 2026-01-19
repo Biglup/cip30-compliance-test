@@ -59,15 +59,12 @@ const getDisplayName = (name) => {
  * Detect all CIP-30 wallets in window.cardano
  * @returns {Array} Array of wallet objects
  */
-export const detectWallets = () => {
+export const detectWallets = (silent = false) => {
     const wallets = [];
 
     if (!window.cardano) {
-        ui.log('window.cardano not found - no wallets detected', 'warning');
         return wallets;
     }
-
-    ui.log('Scanning for CIP-30 wallets...', 'info');
 
     for (const key of Object.keys(window.cardano)) {
         // Skip known non-wallet keys
@@ -86,18 +83,10 @@ export const detectWallets = () => {
                 };
 
                 wallets.push(wallet);
-                ui.log(`Found wallet: ${wallet.displayName} (API v${wallet.apiVersion})`, 'success');
             }
         } catch (err) {
-            // Skip problematic entries
-            ui.log(`Error checking ${key}: ${err.message}`, 'warning');
+            // Skip problematic entries silently
         }
-    }
-
-    if (wallets.length === 0) {
-        ui.log('No CIP-30 wallets detected. Please install a Cardano wallet extension.', 'warning');
-    } else {
-        ui.log(`Detected ${wallets.length} wallet(s)`, 'info');
     }
 
     return wallets;

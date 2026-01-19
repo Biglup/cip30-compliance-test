@@ -22,27 +22,19 @@ import * as votingTests from './handlers/voting-tests.js';
  * Initialize the application
  */
 const initializeApp = async () => {
-    ui.log('Initializing CIP-30 Compliance Testing Tool...', 'info');
-
     try {
-        // Wait for Cometa.js WASM to initialize
-        ui.log('Loading Cometa.js...', 'info');
         await Cometa.ready();
-
         const version = Cometa.getLibCardanoCVersion();
         ui.log(`Cometa.js ready (libcardano-c v${version})`, 'success');
 
-        // Detect wallets
-        ui.log('Detecting wallets...', 'info');
         const wallets = await waitForWallets(3000);
         ui.updateWalletSelect(wallets);
 
         if (wallets.length > 0) {
-            ui.log(`Ready to connect. Select a wallet and click "Connect Wallet".`, 'info');
+            ui.log(`Found ${wallets.length} wallet(s). Select one and click "Connect Wallet".`, 'success');
         } else {
-            ui.log('No wallets detected. Please install a Cardano wallet browser extension.', 'warning');
+            ui.log('No wallets detected. Install a Cardano wallet extension.', 'warning');
         }
-
     } catch (err) {
         ui.log(`Initialization failed: ${err.message}`, 'error');
         console.error('Initialization error:', err);

@@ -63,6 +63,7 @@ export const buildRegisterDRepTransaction = async (metadataUrl, metadataHash) =>
             .build();
 
         setPendingTransaction('drepReg', unsignedTx);
+        ui.logCbor('DRep Registration CBOR', unsignedTx);
 
         let result = `DRep Registration Transaction Built\n\n`;
         result += `DRep ID: ${drepId}\n`;
@@ -98,7 +99,7 @@ export const signRegisterDRepTransaction = async () => {
     }
 
     try {
-        const witnessSet = await state.wallet.signTransaction(unsignedTx, false);
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
         const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
 
         setPendingTransaction('drepReg', signedTx);
@@ -177,6 +178,7 @@ export const buildDeregisterDRepTransaction = async () => {
             .build();
 
         setPendingTransaction('drepDereg', unsignedTx);
+        ui.logCbor('DRep Deregistration CBOR', unsignedTx);
 
         let result = `DRep Deregistration Transaction Built\n\n`;
         result += `DRep ID: ${drepId}\n`;
@@ -208,7 +210,7 @@ export const signDeregisterDRepTransaction = async () => {
     }
 
     try {
-        const witnessSet = await state.wallet.signTransaction(unsignedTx, false);
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
         const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
 
         setPendingTransaction('drepDereg', signedTx);
@@ -326,6 +328,7 @@ export const buildVoteTransaction = async (govActionIdBech32, voteChoice) => {
             .build();
 
         setPendingTransaction('vote', unsignedTx);
+        ui.logCbor('Vote Transaction CBOR', unsignedTx);
 
         let result = `Vote Transaction Built\n\n`;
         result += `DRep ID: ${drepId}\n`;
@@ -358,7 +361,7 @@ export const signVoteTransaction = async () => {
     }
 
     try {
-        const witnessSet = await state.wallet.signTransaction(unsignedTx, false);
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
         const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
 
         setPendingTransaction('vote', signedTx);
