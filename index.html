@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIP-30 Compliance Testing Tool</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>CIP-30 Compliance Testing Tool</h1>
+            <p class="subtitle">Test Cardano wallet CIP-30, CIP-95, and CIP-142 implementations</p>
+            <a href="https://github.com/Biglup/cip30-compliance-test" target="_blank" class="github-link">View on GitHub</a>
+        </header>
+
+        <!-- Section 1: Wallet Connection -->
+        <section class="card" id="connection-section">
+            <h2>1. Wallet Connection</h2>
+            <div class="form-group">
+                <label for="network-select">Network:</label>
+                <select id="network-select">
+                    <option value="preprod">Preprod Testnet</option>
+                    <option value="preview">Preview Testnet</option>
+                    <option value="mainnet">Mainnet</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="wallet-select">Detected Wallets:</label>
+                <select id="wallet-select" disabled>
+                    <option value="">Detecting wallets...</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button id="refresh-wallets-btn" class="btn btn-secondary">Refresh Wallets</button>
+                <button id="connect-btn" class="btn btn-primary" disabled>Connect Wallet</button>
+                <button id="disconnect-btn" class="btn btn-danger hidden">Disconnect</button>
+            </div>
+            <div id="connection-status" class="status-box hidden"></div>
+        </section>
+
+        <!-- Section 2: CIP-30 Basic Methods -->
+        <section class="card hidden" id="cip30-basic-section">
+            <h2>2. CIP-30 Basic Methods</h2>
+            <p class="section-description">Test core CIP-30 wallet API methods</p>
+            <div class="test-grid">
+                <div class="test-item">
+                    <button id="test-getNetworkId" class="btn btn-test">getNetworkId()</button>
+                    <div class="test-result" id="result-getNetworkId"></div>
+                </div>
+                <div class="test-item">
+                    <button id="test-getBalance" class="btn btn-test">getBalance()</button>
+                    <div class="test-result" id="result-getBalance"></div>
+                </div>
+                <div class="test-item">
+                    <button id="test-getUtxos" class="btn btn-test">getUtxos()</button>
+                    <div class="test-result" id="result-getUtxos"></div>
+                </div>
+                <div class="test-item">
+                    <button id="test-getCollateral" class="btn btn-test">getCollateral()</button>
+                    <div class="test-result" id="result-getCollateral"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Address Methods -->
+        <section class="card hidden" id="cip30-address-section">
+            <h2>3. CIP-30 Address Methods</h2>
+            <p class="section-description">Test address retrieval methods</p>
+            <div class="test-grid">
+                <div class="test-item">
+                    <button id="test-getUsedAddresses" class="btn btn-test">getUsedAddresses()</button>
+                    <div class="test-result" id="result-getUsedAddresses"></div>
+                </div>
+                <div class="test-item">
+                    <button id="test-getUnusedAddresses" class="btn btn-test">getUnusedAddresses()</button>
+                    <div class="test-result" id="result-getUnusedAddresses"></div>
+                </div>
+                <div class="test-item">
+                    <button id="test-getChangeAddress" class="btn btn-test">getChangeAddress()</button>
+                    <div class="test-result" id="result-getChangeAddress"></div>
+                </div>
+                <div class="test-item">
+                    <button id="test-getRewardAddresses" class="btn btn-test">getRewardAddresses()</button>
+                    <div class="test-result" id="result-getRewardAddresses"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: CIP-08 Data Signing -->
+        <section class="card hidden" id="cip08-section">
+            <h2>4. CIP-08 Data Signing</h2>
+            <p class="section-description">Test signData() for message signing</p>
+            <div class="form-group">
+                <label for="sign-data-message">Message to Sign:</label>
+                <input type="text" id="sign-data-message" placeholder="Enter message to sign (e.g., Hello Cardano!)" value="Hello Cardano!">
+            </div>
+            <div class="form-group">
+                <label for="sign-data-address">Address (leave empty for first used address):</label>
+                <input type="text" id="sign-data-address" placeholder="addr_test1...">
+            </div>
+            <div class="button-group">
+                <button id="test-signData" class="btn btn-test">signData()</button>
+            </div>
+            <div class="test-result large" id="result-signData"></div>
+        </section>
+
+        <!-- Section 5: CIP-95 Governance Methods -->
+        <section class="card hidden" id="cip95-section">
+            <h2>5. CIP-95 Governance Methods</h2>
+            <p class="section-description">Test Voltaire era governance extensions</p>
+            <div class="test-grid">
+                <div class="test-item">
+                    <button id="test-getPubDRepKey" class="btn btn-test">getPubDRepKey()</button>
+                    <div class="test-result" id="result-getPubDRepKey"></div>
+                </div>
+                <div class="test-item">
+                    <button id="test-getRegisteredPubStakeKeys" class="btn btn-test">getRegisteredPubStakeKeys()</button>
+                    <div class="test-result" id="result-getRegisteredPubStakeKeys"></div>
+                </div>
+                <div class="test-item">
+                    <button id="test-getUnregisteredPubStakeKeys" class="btn btn-test">getUnregisteredPubStakeKeys()</button>
+                    <div class="test-result" id="result-getUnregisteredPubStakeKeys"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: CIP-142 Methods -->
+        <section class="card hidden" id="cip142-section">
+            <h2>6. CIP-142 Methods</h2>
+            <p class="section-description">Test network magic extension</p>
+            <div class="test-grid">
+                <div class="test-item">
+                    <button id="test-getNetworkMagic" class="btn btn-test">getNetworkMagic()</button>
+                    <div class="test-result" id="result-getNetworkMagic"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 7: Transaction Building Tests -->
+        <section class="card hidden" id="tx-builder-section">
+            <h2>7. Transaction Building Tests</h2>
+            <p class="section-description">Build, sign, and optionally submit different transaction types</p>
+
+            <!-- Simple Transfer -->
+            <div class="tx-test-card">
+                <h3>Simple ADA Transfer</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="simple-tx-address">Recipient Address:</label>
+                        <input type="text" id="simple-tx-address" placeholder="addr_test1...">
+                    </div>
+                    <div class="form-group">
+                        <label for="simple-tx-amount">Amount (ADA):</label>
+                        <input type="number" id="simple-tx-amount" placeholder="1.5" step="0.000001" value="2">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="build-simple-tx" class="btn btn-test">Build Transaction</button>
+                    <button id="sign-simple-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-simple-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-simple-tx"></div>
+            </div>
+
+            <!-- Self Transfer (for testing) -->
+            <div class="tx-test-card">
+                <h3>Self Transfer (Send to Own Address)</h3>
+                <div class="form-group">
+                    <label for="self-tx-amount">Amount (ADA):</label>
+                    <input type="number" id="self-tx-amount" placeholder="1.5" step="0.000001" value="1">
+                </div>
+                <div class="button-group">
+                    <button id="build-self-tx" class="btn btn-test">Build Transaction</button>
+                    <button id="sign-self-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-self-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-self-tx"></div>
+            </div>
+        </section>
+
+        <!-- Section 8: Governance Transaction Tests -->
+        <section class="card hidden" id="gov-tx-section">
+            <h2>8. Governance Transaction Tests</h2>
+            <p class="section-description">Test Conway era governance transactions</p>
+
+            <!-- Stake Status Query -->
+            <div class="tx-test-card highlight">
+                <h3>Stake Key Status</h3>
+                <p class="test-description">Query on-chain status of your stake key (registration, pool delegation, vote delegation)</p>
+                <div class="button-group">
+                    <button id="query-stake-status" class="btn btn-test">Query Stake Status</button>
+                </div>
+                <div class="test-result large" id="result-stake-status"></div>
+            </div>
+
+            <!-- Stake Registration -->
+            <div class="tx-test-card">
+                <h3>Register Stake Key</h3>
+                <p class="test-description">Register your stake key for staking and governance participation (requires 2 ADA deposit)</p>
+                <div class="button-group">
+                    <button id="build-stake-reg-tx" class="btn btn-test">Build Registration Tx</button>
+                    <button id="sign-stake-reg-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-stake-reg-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-stake-reg-tx"></div>
+            </div>
+
+            <!-- Stake Deregistration -->
+            <div class="tx-test-card">
+                <h3>Deregister Stake Key</h3>
+                <p class="test-description">Deregister your stake key and reclaim 2 ADA deposit (removes all delegations)</p>
+                <div class="button-group">
+                    <button id="build-stake-dereg-tx" class="btn btn-test">Build Deregistration Tx</button>
+                    <button id="sign-stake-dereg-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-stake-dereg-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-stake-dereg-tx"></div>
+            </div>
+
+            <!-- Vote Delegation -->
+            <div class="tx-test-card">
+                <h3>Delegate Voting Power</h3>
+                <p class="test-description">Delegate your voting power to a DRep</p>
+                <div class="form-group">
+                    <label for="drep-id-input">DRep ID:</label>
+                    <input type="text" id="drep-id-input" placeholder="drep1... or abstain or no_confidence" value="drep1y29h2q6cst2pvkl2sqqvf5ljcy36uv7pmy482xnczddzgqshus24w">
+                </div>
+                <div class="button-group">
+                    <button id="build-vote-deleg-tx" class="btn btn-test">Build Delegation Tx</button>
+                    <button id="sign-vote-deleg-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-vote-deleg-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-vote-deleg-tx"></div>
+            </div>
+
+            <!-- Stake Delegation -->
+            <div class="tx-test-card">
+                <h3>Delegate Stake to Pool</h3>
+                <p class="test-description">Delegate your stake to a stake pool</p>
+                <div class="form-group">
+                    <label for="pool-id-input">Pool ID:</label>
+                    <input type="text" id="pool-id-input" placeholder="pool1..." value="pool1pzdqdxrv0k74p4q33y98f2u7vzaz95et7mjeedjcfy0jcgk754f">
+                </div>
+                <div class="button-group">
+                    <button id="build-stake-deleg-tx" class="btn btn-test">Build Delegation Tx</button>
+                    <button id="sign-stake-deleg-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-stake-deleg-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-stake-deleg-tx"></div>
+            </div>
+        </section>
+
+        <!-- Section 9: Plutus Script Tests -->
+        <section class="card hidden" id="script-section">
+            <h2>9. Plutus Script Tests</h2>
+            <p class="section-description">Lock ADA in an always-succeeds Plutus V3 script and spend from it</p>
+
+            <!-- Script Balance -->
+            <div class="tx-test-card highlight">
+                <h3>Script Balance</h3>
+                <p class="test-description">Query the balance of the always-succeeds script address</p>
+                <div class="button-group">
+                    <button id="query-script-balance" class="btn btn-test">Query Script Balance</button>
+                </div>
+                <div class="test-result large" id="result-script-balance"></div>
+            </div>
+
+            <!-- Lock ADA -->
+            <div class="tx-test-card">
+                <h3>Lock ADA in Script</h3>
+                <p class="test-description">Send ADA to the always-succeeds script with an inline datum</p>
+                <div class="form-group">
+                    <label for="lock-amount">Amount (ADA):</label>
+                    <input type="number" id="lock-amount" placeholder="5" step="0.000001" value="5">
+                </div>
+                <div class="button-group">
+                    <button id="build-lock-tx" class="btn btn-test">Build Lock Tx</button>
+                    <button id="sign-lock-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-lock-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-lock-tx"></div>
+            </div>
+
+            <!-- Spend from Script -->
+            <div class="tx-test-card">
+                <h3>Spend from Script</h3>
+                <p class="test-description">Spend ADA from the script using a redeemer (empty constructor)</p>
+                <div class="form-group">
+                    <label for="spend-amount">Amount to Receive (ADA):</label>
+                    <input type="number" id="spend-amount" placeholder="3" step="0.000001" value="3">
+                </div>
+                <div class="button-group">
+                    <button id="build-spend-tx" class="btn btn-test">Build Spend Tx</button>
+                    <button id="sign-spend-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-spend-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-spend-tx"></div>
+            </div>
+        </section>
+
+        <!-- Section 10: Minting Tests -->
+        <section class="card hidden" id="mint-section">
+            <h2>10. Minting Tests</h2>
+            <p class="section-description">Mint tokens using Native and Plutus scripts</p>
+
+            <!-- Native Script Mint -->
+            <div class="tx-test-card">
+                <h3>Mint with Native Script</h3>
+                <p class="test-description">Mint tokens using a time-locked native script (no redeemer required)</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="native-token-name">Token Name:</label>
+                        <input type="text" id="native-token-name" placeholder="MyToken" value="TestToken">
+                    </div>
+                    <div class="form-group">
+                        <label for="native-mint-amount">Amount:</label>
+                        <input type="number" id="native-mint-amount" placeholder="1" value="1" min="1">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="build-native-mint-tx" class="btn btn-test">Build Mint Tx</button>
+                    <button id="sign-native-mint-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-native-mint-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-native-mint-tx"></div>
+            </div>
+
+            <!-- Plutus Script Mint -->
+            <div class="tx-test-card">
+                <h3>Mint with Plutus Script</h3>
+                <p class="test-description">Mint tokens using a Plutus V3 script (with redeemer)</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="plutus-token-name">Token Name:</label>
+                        <input type="text" id="plutus-token-name" placeholder="MyPlutusToken" value="PlutusToken">
+                    </div>
+                    <div class="form-group">
+                        <label for="plutus-mint-amount">Amount:</label>
+                        <input type="number" id="plutus-mint-amount" placeholder="1" value="1" min="1">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="build-plutus-mint-tx" class="btn btn-test">Build Mint Tx</button>
+                    <button id="sign-plutus-mint-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-plutus-mint-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-plutus-mint-tx"></div>
+            </div>
+        </section>
+
+        <!-- Section 11: DRep & Voting Tests -->
+        <section class="card hidden" id="voting-section">
+            <h2>11. DRep & Voting Tests</h2>
+            <p class="section-description">Register as a DRep and vote on governance proposals</p>
+
+            <!-- Register DRep -->
+            <div class="tx-test-card">
+                <h3>Register as DRep</h3>
+                <p class="test-description">Register your wallet as a Delegated Representative (requires CIP-95)</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="drep-metadata-url">Metadata URL (optional):</label>
+                        <input type="text" id="drep-metadata-url" placeholder="https://example.com/drep.jsonld">
+                    </div>
+                    <div class="form-group">
+                        <label for="drep-metadata-hash">Metadata Hash (optional):</label>
+                        <input type="text" id="drep-metadata-hash" placeholder="64 hex characters">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="build-drep-reg-tx" class="btn btn-test">Build Registration Tx</button>
+                    <button id="sign-drep-reg-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-drep-reg-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-drep-reg-tx"></div>
+            </div>
+
+            <!-- Deregister DRep -->
+            <div class="tx-test-card">
+                <h3>Deregister as DRep</h3>
+                <p class="test-description">Deregister as a DRep and reclaim deposit</p>
+                <div class="button-group">
+                    <button id="build-drep-dereg-tx" class="btn btn-test">Build Deregistration Tx</button>
+                    <button id="sign-drep-dereg-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-drep-dereg-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-drep-dereg-tx"></div>
+            </div>
+
+            <!-- Vote on Proposal -->
+            <div class="tx-test-card">
+                <h3>Vote on Governance Proposal</h3>
+                <p class="test-description">Cast a vote on a governance action (must be registered as DRep)</p>
+                <div class="form-group">
+                    <label for="gov-action-id">Governance Action ID (bech32):</label>
+                    <input type="text" id="gov-action-id" placeholder="gov_action1..." value="gov_action1u8gafgcskj6sqvgwqse7adc0h9438m535lg97czcvxntscvw7f5sqgf2n7j">
+                </div>
+                <div class="form-group">
+                    <label for="vote-choice">Vote:</label>
+                    <select id="vote-choice">
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="abstain">Abstain</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button id="build-vote-tx" class="btn btn-test">Build Vote Tx</button>
+                    <button id="sign-vote-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-vote-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-vote-tx"></div>
+            </div>
+        </section>
+
+        <!-- Section 12: Raw Transaction Signing -->
+        <section class="card hidden" id="raw-tx-section">
+            <h2>12. Raw Transaction Signing</h2>
+            <p class="section-description">Sign a raw transaction CBOR hex</p>
+            <div class="form-group">
+                <label for="raw-tx-cbor">Transaction CBOR (hex):</label>
+                <textarea id="raw-tx-cbor" rows="4" placeholder="84a400..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="partial-sign-checkbox"> Partial Sign
+                </label>
+            </div>
+            <div class="button-group">
+                <button id="sign-raw-tx" class="btn btn-test">signTx()</button>
+            </div>
+            <div class="test-result large" id="result-raw-tx"></div>
+        </section>
+
+        <!-- Log Output -->
+        <section class="card" id="log-section">
+            <h2>Activity Log</h2>
+            <div class="log-controls">
+                <button id="clear-log-btn" class="btn btn-secondary btn-small">Clear Log</button>
+                <button id="copy-log-btn" class="btn btn-secondary btn-small">Copy Log</button>
+            </div>
+            <pre id="log-output">Initializing CIP-30 Compliance Testing Tool...</pre>
+        </section>
+
+        <footer class="footer">
+            <a href="https://github.com/Biglup/cometa.js" target="_blank">
+                <span>Powered by</span>
+                <img src="images/cometa_js.png" alt="Cometa.js" class="cometa-logo">
+            </a>
+        </footer>
+    </div>
+
+    <!-- Cometa.js CDN -->
+    <script src="https://unpkg.com/@biglup/cometa@1.2.0/dist/iife/index.global.js"></script>
+    <script type="module" src="scripts/main.js"></script>
+</body>
+</html>
