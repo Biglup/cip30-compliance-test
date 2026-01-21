@@ -436,9 +436,54 @@
             </div>
         </section>
 
-        <!-- Section 11: Raw Transaction Signing -->
+        <!-- Section 11: Complex Transaction Test -->
+        <section class="card hidden" id="complex-section">
+            <h2>11. Complex Transaction Test</h2>
+            <p class="section-description">Build a single transaction containing multiple governance elements: stake registration, pool delegation, rewards withdrawal, voting, and Info action proposal</p>
+
+            <div class="tx-test-card highlight">
+                <h3>Combined Governance Transaction</h3>
+                <p class="test-description">
+                    This test builds a transaction with all major Cardano transaction elements:
+                </p>
+                <ul class="test-description" style="margin: 0.5rem 0 1rem 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+                    <li>Stake key registration certificate (2 ADA deposit)</li>
+                    <li>Stake pool delegation certificate</li>
+                    <li>Rewards withdrawal (0 if no rewards available)</li>
+                    <li>Voting procedure (vote on governance action)</li>
+                    <li>Info action governance proposal (100,000 ADA deposit on mainnet)</li>
+                    <li>Native script token minting with CIP-25 metadata</li>
+                    <li>Auxiliary data (custom metadata tag 674)</li>
+                    <li>Multiple inputs (fake + real wallet UTxOs)</li>
+                </ul>
+                <div class="form-group">
+                    <label for="complex-pool-id">Pool ID:</label>
+                    <input type="text" id="complex-pool-id" placeholder="pool1..." value="pool1pzdqdxrv0k74p4q33y98f2u7vzaz95et7mjeedjcfy0jcgk754f">
+                </div>
+                <div class="form-group">
+                    <label for="complex-gov-action-id">Governance Action ID (bech32):</label>
+                    <input type="text" id="complex-gov-action-id" placeholder="gov_action1..." value="gov_action1u8gafgcskj6sqvgwqse7adc0h9438m535lg97czcvxntscvw7f5sqgf2n7j">
+                </div>
+                <div class="form-group">
+                    <label for="complex-vote-choice">Vote Choice:</label>
+                    <select id="complex-vote-choice">
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="abstain">Abstain</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button id="build-complex-tx" class="btn btn-test">Build Complex Tx</button>
+                    <button id="sign-complex-tx" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="submit-complex-tx" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="test-result large" id="result-complex-tx"></div>
+            </div>
+        </section>
+
+        <!-- Section 12: Raw Transaction Signing -->
         <section class="card hidden" id="raw-tx-section">
-            <h2>11. Raw Transaction Signing</h2>
+            <h2>12. Raw Transaction Signing</h2>
             <p class="section-description">Sign a raw transaction CBOR hex</p>
             <div class="form-group">
                 <label for="raw-tx-cbor">Transaction CBOR (hex):</label>

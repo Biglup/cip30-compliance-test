@@ -119,6 +119,15 @@ export const buildVoteTx = document.getElementById('build-vote-tx');
 export const signVoteTx = document.getElementById('sign-vote-tx');
 export const submitVoteTx = document.getElementById('submit-vote-tx');
 
+// Complex transaction elements
+export const complexSection = document.getElementById('complex-section');
+export const complexPoolId = document.getElementById('complex-pool-id');
+export const complexGovActionId = document.getElementById('complex-gov-action-id');
+export const complexVoteChoice = document.getElementById('complex-vote-choice');
+export const buildComplexTx = document.getElementById('build-complex-tx');
+export const signComplexTx = document.getElementById('sign-complex-tx');
+export const submitComplexTx = document.getElementById('submit-complex-tx');
+
 // Raw transaction elements
 export const rawTxCbor = document.getElementById('raw-tx-cbor');
 export const partialSignCheckbox = document.getElementById('partial-sign-checkbox');
@@ -188,10 +197,9 @@ export const logCbor = (label, cbor, type = 'info') => {
         log(`${label}: [No CBOR data]`, 'warning');
         return;
     }
-    // Show truncated CBOR with length
+    // Show full CBOR with length
     const len = cbor.length;
-    const preview = len > 120 ? `${cbor.substring(0, 60)}...${cbor.substring(len - 60)}` : cbor;
-    log(`${label} (${len} chars):\n${preview}`, type);
+    log(`${label} (${len} chars):\n${cbor}`, type);
 };
 
 /**
@@ -277,6 +285,7 @@ export const showTestSections = () => {
     govTxSection.classList.remove('hidden');
     scriptSection.classList.remove('hidden');
     mintSection.classList.remove('hidden');
+    complexSection.classList.remove('hidden');
     rawTxSection.classList.remove('hidden');
 };
 
@@ -293,6 +302,7 @@ export const hideTestSections = () => {
     govTxSection.classList.add('hidden');
     scriptSection.classList.add('hidden');
     mintSection.classList.add('hidden');
+    complexSection.classList.add('hidden');
     rawTxSection.classList.add('hidden');
 };
 
@@ -343,6 +353,10 @@ export const resetUI = () => {
     submitDRepDeregTx.disabled = true;
     signVoteTx.disabled = true;
     submitVoteTx.disabled = true;
+
+    // Reset complex transaction buttons
+    signComplexTx.disabled = true;
+    submitComplexTx.disabled = true;
 
     // Clear all test results
     const results = document.querySelectorAll('.test-result');

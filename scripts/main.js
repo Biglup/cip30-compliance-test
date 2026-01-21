@@ -256,6 +256,16 @@ const setupEventHandlers = () => {
     });
     ui.signVoteTx.addEventListener('click', () => runTest(votingTests.signVoteTransaction));
     ui.submitVoteTx.addEventListener('click', () => runTest(votingTests.submitVoteTransaction));
+
+    // Complex transaction handlers
+    ui.buildComplexTx.addEventListener('click', () => {
+        const poolId = ui.complexPoolId.value;
+        const govActionId = ui.complexGovActionId.value;
+        const voteChoice = ui.complexVoteChoice.value;
+        runTest(txTests.buildComplexTransaction, poolId, govActionId, voteChoice);
+    });
+    ui.signComplexTx.addEventListener('click', () => runTest(txTests.signComplexTransaction));
+    ui.submitComplexTx.addEventListener('click', () => runTest(txTests.submitComplexTransaction));
 };
 
 // Initialize when DOM is ready

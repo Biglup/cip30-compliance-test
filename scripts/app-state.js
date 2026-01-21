@@ -28,8 +28,10 @@ export const state = {
         simple: null,
         self: null,
         stakeReg: null,
+        stakeDereg: null,
         voteDeleg: null,
         stakeDeleg: null,
+        complex: null,
     },
 
     // CIP extension support flags
@@ -67,8 +69,10 @@ export const resetState = () => {
         simple: null,
         self: null,
         stakeReg: null,
+        stakeDereg: null,
         voteDeleg: null,
         stakeDeleg: null,
+        complex: null,
     };
     state.extensions = {
         cip95: false,

@@ -946,6 +946,358 @@ export const queryStakeStatus = async () => {
 };
 
 /**
+ * Get the CIP-95 API
+ */
+const getCip95Api = () => {
+    if (!state.cip30Api) return null;
+    return state.cip30Api.cip95 || state.cip30Api.experimental?.cip95 || null;
+};
+
+/**
+ * Build a complex transaction with multiple governance elements
+ * Includes: stake registration, stake delegation, rewards withdrawal (if any),
+ * voting on governance action, and Info action proposal
+ * @param {string} poolId - Pool ID for stake delegation
+ * @param {string} govActionIdBech32 - Governance action ID to vote on
+ * @param {string} voteChoice - Vote choice: 'yes', 'no', or 'abstain'
+ */
+export const buildComplexTransaction = async (poolId, govActionIdBech32, voteChoice) => {
+    ui.log('Building complex transaction...', 'info');
+    ui.setTestResult('complex-tx', 'Building transaction...', 'pending');
+
+    try {
+        if (!poolId) {
+            throw new Error('Pool ID is required');
+        }
+        if (!govActionIdBech32) {
+            throw new Error('Governance action ID is required');
+        }
+
+        // Get CIP-95 API for DRep key
+        const cip95 = getCip95Api();
+        if (!cip95) {
+            throw new Error('CIP-95 extension not available. Wallet does not support governance.');
+        }
+
+        // Get reward address
+        const rewardAddressesHex = await state.cip30Api.getRewardAddresses();
+        if (!rewardAddressesHex || rewardAddressesHex.length === 0) {
+            throw new Error('No reward addresses found');
+        }
+
+        const addr = Cometa.Address.fromHex(rewardAddressesHex[0]);
+        const rewardAddress = addr.asReward();
+        const stakeAddressBech32 = rewardAddress ? rewardAddress.toBech32() : addr.toString();
+
+        ui.log(`Reward address: ${stakeAddressBech32}`, 'info');
+
+        // Get DRep public key for voting
+        const pubDRepKey = await cip95.getPubDRepKey();
+        if (!pubDRepKey) {
+            throw new Error('Could not get DRep public key from wallet');
+        }
+
+        const drepId = Cometa.cip129DRepFromPublicKey(pubDRepKey);
+        ui.log(`DRep ID: ${drepId}`, 'info');
+
+        // Query withdrawable rewards from Blockfrost
+        let withdrawableAmount = 0n;
+        try {
+            const baseUrl = state.provider.url || state.provider.baseUrl;
+            const response = await fetch(`${baseUrl}accounts/${stakeAddressBech32}`);
+            if (response.ok) {
+                const accountInfo = await response.json();
+                if (accountInfo.withdrawable_amount) {
+                    withdrawableAmount = BigInt(accountInfo.withdrawable_amount);
+                    ui.log(`Withdrawable rewards: ${Number(withdrawableAmount) / 1_000_000} ADA`, 'info');
+                }
+            }
+        } catch (err) {
+            ui.log('Could not query rewards (stake key may not be registered yet)', 'warning');
+        }
+
+        // Parse governance action ID
+        const govActionId = Cometa.govActionIdFromBech32(govActionIdBech32);
+
+        // Map vote choice
+        let vote;
+        switch (voteChoice.toLowerCase()) {
+            case 'yes':
+                vote = Cometa.Vote.Yes;
+                break;
+            case 'no':
+                vote = Cometa.Vote.No;
+                break;
+            case 'abstain':
+                vote = Cometa.Vote.Abstain;
+                break;
+            default:
+                throw new Error('Invalid vote choice. Must be yes, no, or abstain.');
+        }
+
+        // Create voter for voting procedure
+        const voter = {
+            credential: Cometa.dRepToCredential(drepId),
+            type: Cometa.VoterType.DRepKeyHash
+        };
+
+        // Create voting procedure
+        const votingProcedure = {
+            vote: vote
+        };
+
+        // Info action anchor (placeholder metadata)
+        const infoAnchor = {
+            url: 'https://example.com/info-action.jsonld',
+            dataHash: '0000000000000000000000000000000000000000000000000000000000000000'
+        };
+
+        // Get own address for outputs
+        const addresses = await state.wallet.getUsedAddresses();
+        const ownAddress = addressToBech32(addresses[0]);
+
+        // Create a fake UTxO to cover the Info Action deposit (~100k ADA on mainnet)
+        const fakeUtxo = {
+            input: {
+                txId: '0'.repeat(64),
+                index: 0
+            },
+            output: {
+                address: ownAddress,
+                value: {
+                    coins: 250_000_000_000n // 250k ADA to cover all deposits
+                }
+            }
+        };
+
+        // Get real UTxOs from wallet to add as inputs
+        const walletUtxos = await state.wallet.getUnspentOutputs();
+        const realUtxosToAdd = walletUtxos.slice(0, 3); // Add up to 3 real UTxOs
+
+        ui.log(`Adding ${realUtxosToAdd.length} real UTxOs from wallet`, 'info');
+
+        // Native script for minting (valid until far future)
+        const mintingScript = {
+            type: Cometa.ScriptType.Native,
+            kind: Cometa.NativeScriptKind.RequireAllOf,
+            scripts: [
+                {
+                    type: Cometa.ScriptType.Native,
+                    kind: Cometa.NativeScriptKind.RequireTimeBefore,
+                    slot: 1001655683199 // Valid until year 33658
+                }
+            ]
+        };
+
+        // Compute policy ID and asset ID for minting
+        const policyId = Cometa.computeScriptHash(mintingScript);
+        const tokenName = 'ComplexTestToken';
+        const assetNameHex = Array.from(new TextEncoder().encode(tokenName))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+        const assetId = policyId + assetNameHex;
+        const mintAmount = 1n;
+
+        ui.log(`Minting token: ${tokenName} (Policy: ${policyId.substring(0, 20)}...)`, 'info');
+
+        // Create CIP-25 metadata for the minted token
+        const cip25Metadata = {
+            [policyId]: {
+                [tokenName]: {
+                    name: tokenName,
+                    image: 'ipfs://QmS7w3Q5oVL9NE1gJnsMVPp6fcxia1e38cRT5pE5mmxawL',
+                    description: 'Complex transaction test token',
+                    mediaType: 'image/png'
+                }
+            }
+        };
+
+        // Additional auxiliary metadata
+        const auxMetadata = {
+            msg: ['Complex Transaction Test'],
+            timestamp: Date.now(),
+            elements: ['stake_reg', 'stake_deleg', 'withdrawal', 'vote', 'info_action', 'mint']
+        };
+
+        // Build transaction with all elements
+        const builder = await state.wallet.createTransactionBuilder();
+
+        // Chain all operations - add fake UTxO and real UTxOs as inputs
+        let txBuilder = builder
+            .addInput({ utxo: fakeUtxo });
+
+        // Add real UTxOs from wallet
+        for (const utxo of realUtxosToAdd) {
+            txBuilder = txBuilder.addInput({ utxo });
+        }
+
+        // Add metadata
+        txBuilder = txBuilder
+            .setMetadata({ tag: 721, metadata: cip25Metadata }) // CIP-25 NFT metadata
+            .setMetadata({ tag: 674, metadata: auxMetadata });  // Custom metadata
+
+        // Add minting
+        txBuilder = txBuilder
+            .mintToken({ amount: mintAmount, assetIdHex: assetId })
+            .addScript(mintingScript)
+            .sendValue({
+                address: ownAddress,
+                value: {
+                    assets: { [assetId]: mintAmount },
+                    coins: 2_000_000n // Min UTxO for token
+                }
+            });
+
+        // Add governance operations
+        txBuilder = txBuilder
+            .registerStakeAddress({
+                rewardAddress: rewardAddress,
+            })
+            .delegateStake({
+                rewardAddress: rewardAddress,
+                poolId: poolId,
+            })
+            .withdrawRewards({
+                rewardAddress: rewardAddress,
+                amount: withdrawableAmount, // Will be 0n if no rewards available
+            });
+
+        // Add vote
+        txBuilder = txBuilder.vote({
+            actionId: govActionId,
+            voter: voter,
+            votingProcedure: votingProcedure,
+        });
+
+        // Add Info governance action proposal
+        txBuilder = txBuilder.proposeInfoAction({
+            rewardAddress: rewardAddress,
+            anchor: infoAnchor,
+        });
+
+        const unsignedTx = await txBuilder
+            .expiresIn(3600)
+            .build();
+
+        setPendingTransaction('complex', unsignedTx);
+        ui.logCbor('Complex Transaction CBOR', unsignedTx);
+
+        let result = `Complex Transaction Built\n\n`;
+        result += `--- Elements Included ---\n`;
+        result += `1. Stake Key Registration (2 ADA deposit)\n`;
+        result += `2. Stake Pool Delegation: ${poolId.substring(0, 30)}...\n`;
+        result += `3. Rewards Withdrawal: ${Number(withdrawableAmount) / 1_000_000} ADA\n`;
+        result += `4. Vote on ${govActionIdBech32.substring(0, 30)}...: ${voteChoice.toUpperCase()}\n`;
+        result += `5. Info Action Proposal (100k ADA deposit on mainnet)\n`;
+        result += `6. Mint Token: ${tokenName} (amount: ${mintAmount})\n`;
+        result += `7. CIP-25 NFT Metadata (tag 721)\n`;
+        result += `8. Custom Auxiliary Data (tag 674)\n`;
+        result += `\n--- Inputs ---\n`;
+        result += `Fake UTxO: 250k ADA (for deposits)\n`;
+        result += `Real UTxOs: ${realUtxosToAdd.length} from wallet\n`;
+        result += `\nReward Address: ${stakeAddressBech32.substring(0, 40)}...`;
+        result += `\nDRep ID: ${drepId.substring(0, 40)}...`;
+        result += `\nPolicy ID: ${policyId.substring(0, 40)}...`;
+
+        ui.setTestResult('complex-tx', result, 'success');
+        ui.log('Complex transaction built successfully', 'success');
+
+        ui.signComplexTx.disabled = false;
+        ui.submitComplexTx.disabled = true;
+
+        return unsignedTx;
+    } catch (err) {
+        const errorMsg = `Build failed: ${err.message}`;
+        ui.setTestResult('complex-tx', errorMsg, 'error');
+        ui.log(`Complex transaction build failed: ${err.message}`, 'error');
+        clearPendingTransaction('complex');
+        throw err;
+    }
+};
+
+/**
+ * Sign the pending complex transaction
+ */
+export const signComplexTransaction = async () => {
+    ui.log('Signing complex transaction...', 'info');
+    ui.setTestResult('complex-tx', 'Requesting signature...', 'pending');
+
+    const unsignedTx = getPendingTransaction('complex');
+    if (!unsignedTx) {
+        throw new Error('No pending transaction to sign');
+    }
+
+    try {
+        const witnessSet = await state.wallet.signTransaction(unsignedTx, true);
+        const signedTx = Cometa.applyVkeyWitnessSet(unsignedTx, witnessSet);
+
+        setPendingTransaction('complex', signedTx);
+
+        let result = `Transaction Signed Successfully\n\n`;
+        result += `Multiple certificates and voting procedure signed.\n`;
+        result += `Ready to submit.`;
+
+        ui.setTestResult('complex-tx', result, 'success');
+        ui.log('Complex transaction signed successfully', 'success');
+
+        ui.signComplexTx.disabled = true;
+        ui.submitComplexTx.disabled = false;
+
+        return signedTx;
+    } catch (err) {
+        const errorMsg = `Sign failed: ${err.message}`;
+        ui.setTestResult('complex-tx', errorMsg, 'error');
+        ui.log(`Complex transaction signing failed: ${err.message}`, 'error');
+
+        if (err.code === 2 || err.message?.includes('declined') || err.message?.includes('reject')) {
+            ui.log('User declined to sign the transaction', 'warning');
+        }
+
+        throw err;
+    }
+};
+
+/**
+ * Submit the signed complex transaction
+ */
+export const submitComplexTransaction = async () => {
+    ui.log('Submitting complex transaction...', 'info');
+    ui.setTestResult('complex-tx', 'Submitting to network...', 'pending');
+
+    const signedTx = getPendingTransaction('complex');
+    if (!signedTx) {
+        throw new Error('No signed transaction to submit');
+    }
+
+    try {
+        const txId = await state.wallet.submitTransaction(signedTx);
+
+        let result = `Transaction Submitted!\n\n`;
+        result += `Transaction ID:\n${txId}\n\n`;
+        result += `Check explorer for:\n`;
+        result += `- Stake key registration certificate\n`;
+        result += `- Stake pool delegation certificate\n`;
+        result += `- Rewards withdrawal (if any)\n`;
+        result += `- Voting procedure\n`;
+        result += `- Info action governance proposal`;
+
+        ui.setTestResult('complex-tx', result, 'success');
+        ui.log(`Complex transaction submitted: ${txId}`, 'success');
+
+        clearPendingTransaction('complex');
+        ui.signComplexTx.disabled = true;
+        ui.submitComplexTx.disabled = true;
+
+        return txId;
+    } catch (err) {
+        const errorMsg = `Submit failed: ${err.message}`;
+        ui.setTestResult('complex-tx', errorMsg, 'error');
+        ui.log(`Complex transaction submission failed: ${err.message}`, 'error');
+        throw err;
+    }
+};
+
+/**
  * Sign a raw transaction CBOR
  * @param {string} txCbor - Transaction CBOR hex string
  * @param {boolean} partialSign - Whether to allow partial signing
