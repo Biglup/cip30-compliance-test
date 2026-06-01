@@ -37,6 +37,14 @@ export const signDataMessage = document.getElementById('sign-data-message');
 export const signDataAddress = document.getElementById('sign-data-address');
 export const testSignData = document.getElementById('test-signData');
 
+// CIP-08 DRep ID signing (CIP-95)
+export const computeDRepIds = document.getElementById('compute-drep-ids');
+export const signDRepCip129Bech32 = document.getElementById('sign-drep-cip129-bech32');
+export const signDRepCip129Hex = document.getElementById('sign-drep-cip129-hex');
+export const signDRepCip105Bech32 = document.getElementById('sign-drep-cip105-bech32');
+export const signDRepCip105Hex = document.getElementById('sign-drep-cip105-hex');
+export const signDRepType6 = document.getElementById('sign-drep-type6');
+
 // CIP-95 test buttons
 export const testGetPubDRepKey = document.getElementById('test-getPubDRepKey');
 export const testGetRegisteredPubStakeKeys = document.getElementById('test-getRegisteredPubStakeKeys');

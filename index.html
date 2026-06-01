@@ -132,6 +132,28 @@
                 <button id="test-signData" class="btn btn-test">Sign Data</button>
             </div>
             <div class="test-result large" id="result-signData"></div>
+
+            <!-- Sign with DRep ID (CIP-95) -->
+            <div class="tx-test-card">
+                <h3>Sign with DRep ID (CIP-95)</h3>
+                <p class="test-description">
+                    Sign the message above with your DRep key using the various DRep ID
+                    representations wallets accept. Compute the IDs first, then sign with each
+                    encoding to verify wallet support: CIP-129 (bech32/hex), legacy CIP-105
+                    (bech32/hex), and a type-6 address (first byte ignored, key hash reused).
+                </p>
+                <div class="button-group">
+                    <button id="compute-drep-ids" class="btn btn-test">Compute DRep IDs</button>
+                </div>
+                <div class="button-group">
+                    <button id="sign-drep-cip129-bech32" class="btn btn-secondary">CIP-129 Bech32</button>
+                    <button id="sign-drep-cip129-hex" class="btn btn-secondary">CIP-129 Hex</button>
+                    <button id="sign-drep-cip105-bech32" class="btn btn-secondary">CIP-105 Bech32</button>
+                    <button id="sign-drep-cip105-hex" class="btn btn-secondary">CIP-105 Hex</button>
+                    <button id="sign-drep-type6" class="btn btn-secondary">Type-6 Address</button>
+                </div>
+                <div class="test-result large" id="result-drepSign"></div>
+            </div>
         </section>
 
         <!-- Section 5: CIP-95 Governance Methods -->

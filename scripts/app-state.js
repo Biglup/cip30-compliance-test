@@ -20,6 +20,7 @@ export const state = {
 
     // CIP-95 data
     pubDRepKey: null,
+    drepRepresentations: null,  // Cached DRep ID encodings for signData() tests
     registeredPubStakeKeys: [],
     unregisteredPubStakeKeys: [],
 
@@ -63,6 +64,7 @@ export const resetState = () => {
     state.changeAddress = null;
     state.rewardAddresses = [];
     state.pubDRepKey = null;
+    state.drepRepresentations = null;
     state.registeredPubStakeKeys = [];
     state.unregisteredPubStakeKeys = [];
     state.pendingTransactions = {

@@ -14,7 +14,7 @@ import { connectWallet, disconnectWallet, isConnected } from './handlers/connect
 import * as cip30Tests from './handlers/cip30-tests.js';
 import * as cip95Tests from './handlers/cip95-tests.js';
 import * as txTests from './handlers/transaction-tests.js';
-import { testSignData } from './handlers/sign-data-tests.js';
+import { testSignData, computeDRepRepresentations, signDataWithDRep } from './handlers/sign-data-tests.js';
 import * as scriptTests from './handlers/script-tests.js';
 import * as votingTests from './handlers/voting-tests.js';
 
@@ -139,6 +139,18 @@ const setupEventHandlers = () => {
         const address = ui.signDataAddress.value || null;
         runTest(testSignData, message, address);
     });
+
+    // CIP-08 sign with DRep ID handlers (CIP-95)
+    ui.computeDRepIds.addEventListener('click', () => runTest(computeDRepRepresentations));
+    const signWithDRep = (formatKey) => {
+        const message = ui.signDataMessage.value || 'Hello Cardano!';
+        runTest(signDataWithDRep, formatKey, message);
+    };
+    ui.signDRepCip129Bech32.addEventListener('click', () => signWithDRep('cip129Bech32'));
+    ui.signDRepCip129Hex.addEventListener('click', () => signWithDRep('cip129Hex'));
+    ui.signDRepCip105Bech32.addEventListener('click', () => signWithDRep('cip105Bech32'));
+    ui.signDRepCip105Hex.addEventListener('click', () => signWithDRep('cip105Hex'));
+    ui.signDRepType6.addEventListener('click', () => signWithDRep('type6Address'));
 
     // CIP-95 Governance test handlers
     ui.testGetPubDRepKey.addEventListener('click', () => runTest(cip95Tests.testGetPubDRepKey));
