@@ -90,7 +90,11 @@ export const testSignData = async (message, addressBech32 = null) => {
         output += `\n--- Verification Info ---\n`;
         output += `Address: ${addressDisplay}\n`;
 
-        ui.setTestResult('signData', output, 'success');
+        // Verify the returned signature against the COSE_Key, client-side
+        const verification = buildVerificationReport(result, payload);
+        output += verification.text;
+
+        ui.setTestResult('signData', output, verification.valid === false ? 'error' : 'success');
         ui.log('signData() completed successfully', 'success');
 
         return result;
@@ -306,7 +310,11 @@ export const signDataWithDRep = async (formatKey, message) => {
             output += `Key (COSE_Key):\n${result.key}\n`;
         }
 
-        ui.setTestResult('drepSign', output, 'success');
+        // Verify the returned signature against the COSE_Key, client-side
+        const verification = buildVerificationReport(result, payload);
+        output += verification.text;
+
+        ui.setTestResult('drepSign', output, verification.valid === false ? 'error' : 'success');
         ui.log(`signData() with ${label} completed successfully`, 'success');
 
         return result;
@@ -327,28 +335,183 @@ export const signDataWithDRep = async (formatKey, message) => {
     }
 };
 
+// --- CIP-08 / COSE_Sign1 client-side signature verification ---------------
+//
+// signData() returns a COSE_Sign1 (the signature) and a COSE_Key (the public
+// key). To check the wallet really signed our payload we reconstruct the COSE
+// `Sig_structure` and verify the Ed25519 signature against the COSE_Key, all in
+// the browser. Cometa exposes the CBOR + Ed25519 primitives but no COSE helper,
+// so we parse the structures by hand (RFC 8152).
+
+const u8ToHex = (u8) => Cometa.uint8ArrayToHex(u8);
+
+/** Read a CBOR integer that may be unsigned (major type 0) or negative (type 1). */
+const readIntAny = (reader) => {
+    if (reader.peekState() === Cometa.CborReaderState.NegativeInteger) {
+        return Number(reader.readSignedInt());
+    }
+    return Number(reader.readUnsignedInt());
+};
+
 /**
- * Verify a signed message (client-side verification)
- * Note: Full verification requires parsing COSE structures
- * @param {string} signature - COSE_Sign1 signature
- * @param {string} key - COSE_Key public key
- * @param {string} payload - Original payload hex
- * @param {string} addressBech32 - Expected signer address
+ * Parse a COSE_Sign1: [ protected: bstr, unprotected: map, payload: bstr/nil, signature: bstr ]
+ * (optionally wrapped in CBOR tag 18).
  */
-export const verifySignature = async (signature, key, payload, addressBech32) => {
-    ui.log('Verifying signature...', 'info');
+const parseCoseSign1 = (signatureHex) => {
+    const r = Cometa.CborReader.fromHex(signatureHex);
+    if (r.peekState() === Cometa.CborReaderState.Tag) {
+        r.readTag(); // COSE_Sign1 tag (18) - not all wallets emit it
+    }
+    r.readStartArray();
+    const protectedBytes = r.readByteString();
+    r.skipValue(); // unprotected header map - nothing we need
+    let payload = null;
+    if (r.peekState() === Cometa.CborReaderState.Null) {
+        r.readNull(); // detached payload
+    } else {
+        payload = r.readByteString();
+    }
+    const signature = r.readByteString();
+    return { protectedBytes, payload, signature };
+};
 
-    // Note: Full COSE verification is complex and typically done server-side
-    // This is a placeholder showing what information is needed
+/**
+ * Parse the serialized COSE protected-header map for the CIP-8 fields we care
+ * about: alg (label 1), the signer `address`, and the `hashed` flag.
+ * An empty protected header is a zero-length byte string, not an empty map.
+ */
+const parseProtectedHeaders = (protectedBytes) => {
+    const out = { alg: null, addressHex: null, hashed: false };
+    if (!protectedBytes || protectedBytes.length === 0) return out;
 
-    const info = {
-        signature: signature?.substring(0, 50) + '...',
-        key: key?.substring(0, 50) + '...',
-        payload: payload,
-        address: addressBech32,
+    const r = Cometa.CborReader.from(protectedBytes);
+    const n = Number(r.readStartMap());
+    for (let i = 0; i < n; i++) {
+        const key = r.peekState() === Cometa.CborReaderState.TextString
+            ? r.readTextString()
+            : readIntAny(r);
+        if (key === 1) {
+            out.alg = readIntAny(r);
+        } else if (key === 'address') {
+            out.addressHex = u8ToHex(r.readByteString());
+        } else if (key === 'hashed') {
+            out.hashed = r.readBoolean();
+        } else {
+            r.skipValue();
+        }
+    }
+    return out;
+};
+
+/** Extract the raw Ed25519 public key (COSE_Key label -2, "x") from a COSE_Key. */
+const parseCoseKeyPublicKey = (keyHex) => {
+    const r = Cometa.CborReader.fromHex(keyHex);
+    const n = Number(r.readStartMap());
+    let x = null;
+    for (let i = 0; i < n; i++) {
+        const label = readIntAny(r);
+        if (label === -2) {
+            x = r.readByteString();
+        } else {
+            r.skipValue();
+        }
+    }
+    return x;
+};
+
+/** Build the canonical COSE Sig_structure that was signed. */
+const buildSigStructure = (protectedBytes, payloadBytes) => {
+    // Definite-length array (size 4) - no endArray(), which is for indefinite only
+    const w = new Cometa.CborWriter();
+    w.startArray(4);
+    w.writeTextString('Signature1');
+    w.writeByteString(protectedBytes);
+    w.writeByteString(new Uint8Array(0)); // external_aad is empty in CIP-8
+    w.writeByteString(payloadBytes);
+    return w.encode();
+};
+
+/**
+ * Verify a CIP-08 signData() result entirely client-side.
+ *
+ * @param {string} signatureHex - COSE_Sign1 hex returned by the wallet
+ * @param {string} keyHex - COSE_Key hex returned by the wallet
+ * @param {string|null} expectedPayloadHex - Payload we asked the wallet to sign
+ *        (used only when the COSE_Sign1 carries a detached/nil payload)
+ * @returns {Object} verification report
+ */
+export const verifyCip8Signature = (signatureHex, keyHex, expectedPayloadHex = null) => {
+    const { protectedBytes, payload, signature } = parseCoseSign1(signatureHex);
+    const headers = parseProtectedHeaders(protectedBytes);
+
+    const xBytes = parseCoseKeyPublicKey(keyHex);
+    if (!xBytes) {
+        throw new Error('COSE_Key has no Ed25519 public key (label -2)');
+    }
+
+    // The bytes that were actually signed: the COSE_Sign1 payload if present,
+    // otherwise the payload we supplied (hashed first if the header says so).
+    let signedPayload = payload;
+    if (!signedPayload) {
+        let bytes = expectedPayloadHex != null
+            ? Cometa.hexToUint8Array(expectedPayloadHex)
+            : new Uint8Array(0);
+        if (headers.hashed) bytes = Cometa.Blake2b.computeHash(bytes, 28);
+        signedPayload = bytes;
+    }
+
+    const sigStructure = buildSigStructure(protectedBytes, signedPayload);
+    const publicKey = Cometa.Ed25519PublicKey.fromBytes(xBytes);
+    const ed25519Sig = Cometa.Ed25519Signature.fromBytes(signature);
+    const valid = publicKey.verify(ed25519Sig, sigStructure);
+
+    // Best-effort, format-agnostic binding check: the signer's key hash should
+    // appear inside the address/credential carried in the protected header.
+    const keyHashHex = publicKey.toHashHex();
+    const keyMatchesAddress = headers.addressHex
+        ? headers.addressHex.toLowerCase().includes(keyHashHex.toLowerCase())
+        : null;
+
+    return {
+        valid,
+        algId: headers.alg,
+        hashed: headers.hashed,
+        publicKeyHex: publicKey.toHex(),
+        keyHashHex,
+        addressHex: headers.addressHex,
+        keyMatchesAddress,
+        payloadHex: payload ? u8ToHex(payload) : null,
     };
+};
 
-    ui.log('Verification info collected. Full verification requires COSE parsing.', 'info');
-
-    return info;
+/**
+ * Run client-side verification and format it for the result box. Verification
+ * problems are reported but never throw, so a signing success is still shown.
+ *
+ * @param {Object} result - signData() result ({ signature, key })
+ * @param {string} payloadHex - Payload that was signed
+ * @returns {{ text: string, valid: boolean|null }}
+ */
+export const buildVerificationReport = (result, payloadHex) => {
+    if (!result?.signature || !result?.key) {
+        return { text: '', valid: null };
+    }
+    try {
+        const v = verifyCip8Signature(result.signature, result.key, payloadHex);
+        let text = `\n--- Signature Verification (client-side) ---\n`;
+        text += `Ed25519 signature valid: ${v.valid ? 'YES ✅' : 'NO ❌'}\n`;
+        text += `COSE alg: ${v.algId ?? 'n/a'} (EdDSA = -8)\n`;
+        text += `Payload hashed: ${v.hashed}\n`;
+        text += `Signing public key: ${v.publicKeyHex}\n`;
+        text += `Public key hash (Blake2b-224): ${v.keyHashHex}\n`;
+        if (v.addressHex) {
+            text += `Signer header credential: ${v.addressHex}\n`;
+            text += `Key hash matches credential: ${v.keyMatchesAddress ? 'YES ✅' : 'NO ⚠️'}\n`;
+        }
+        ui.log(`Client-side verification: signature ${v.valid ? 'VALID' : 'INVALID'}`, v.valid ? 'success' : 'error');
+        return { text, valid: v.valid };
+    } catch (err) {
+        ui.log(`Client-side verification skipped: ${err.message}`, 'warning');
+        return { text: `\n--- Signature Verification ---\nCould not verify: ${err.message}\n`, valid: null };
+    }
 };
