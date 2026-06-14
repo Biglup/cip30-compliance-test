@@ -4,6 +4,10 @@
  */
 
 import { state, setState, resetState } from '../app-state.js';
+import {
+    getCustomNetworkParams,
+    normalizeProviderUrl,
+} from '../network-config.js';
 import * as ui from '../ui.js';
 import { getWalletByName, checkExtensionSupport } from '../wallet-detector.js';
 
@@ -27,17 +31,46 @@ const NETWORK_CONFIG = {
         name: 'Preview Testnet',
         expectedNetworkId: 0,
     },
+    // Local / Custom devnet — magic + expectedNetworkId come from URL
+    // params (?magic=&networkId=) so the tool isn't pinned to the
+    // public testnets. See network-config.js.
+    get custom() {
+        const { magic, networkId } = getCustomNetworkParams();
+        return {
+            magic,
+            name: 'Local / Custom devnet',
+            expectedNetworkId: networkId,
+        };
+    },
 };
 
 /**
- * Create a Blockfrost provider for the selected network
- * @param {string} network - Network identifier (mainnet, preprod, preview)
+ * Create a Blockfrost provider for the selected network.
+ * For the built-in public networks this routes through the hosted proxy;
+ * for the "custom" network the base URL comes from the ?provider= URL
+ * param, pointed straight at a Blockfrost-compatible endpoint (no proxy,
+ * no key) — e.g. a local yaci-devkit store.
+ * @param {string} network - Network identifier (mainnet, preprod, preview, custom)
  * @returns {Object} Cometa.BlockfrostProvider instance
  */
 const createProvider = (network) => {
     const config = NETWORK_CONFIG[network];
     if (!config) {
         throw new Error(`Unknown network: ${network}`);
+    }
+
+    if (network === 'custom') {
+        const { provider } = getCustomNetworkParams();
+        if (!provider) {
+            throw new Error(
+                'Custom network selected but no ?provider= URL param was supplied',
+            );
+        }
+        return new Cometa.BlockfrostProvider({
+            baseUrl: normalizeProviderUrl(provider),
+            network: config.magic,
+            projectId: '',
+        });
     }
 
     const baseUrl = `${PROXY_URL}${network}/`;

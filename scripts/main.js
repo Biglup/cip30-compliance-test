@@ -27,8 +27,34 @@ const initializeApp = async () => {
         const version = Cometa.getLibCardanoCVersion();
         ui.log(`Cometa.js ready (libcardano-c v${version})`, 'success');
 
+        // Allow the network and wallet to be preselected via URL params
+        // (?network=custom&wallet=lace). Handy for automated drivers that
+        // target a fixed wallet + local devnet without clicking the
+        // selects. Falls back to the dropdown defaults when absent. Network
+        // is applied immediately (independent of wallet detection); wallet
+        // is applied after detection populates the select below.
+        const params = new URLSearchParams(window.location.search);
+        const networkParam = params.get('network');
+        if (networkParam) {
+            const hasOption = [...ui.networkSelect.options].some(
+                option => option.value === networkParam,
+            );
+            if (hasOption) ui.networkSelect.value = networkParam;
+        }
+
         const wallets = await waitForWallets(3000);
         ui.updateWalletSelect(wallets);
+
+        const walletParam = params.get('wallet');
+        if (walletParam) {
+            const hasWallet = [...ui.walletSelect.options].some(
+                option => option.value === walletParam,
+            );
+            if (hasWallet) {
+                ui.walletSelect.value = walletParam;
+                ui.connectBtn.disabled = false;
+            }
+        }
 
         if (wallets.length > 0) {
             ui.log(`Found ${wallets.length} wallet(s). Select one and click "Connect Wallet".`, 'success');
