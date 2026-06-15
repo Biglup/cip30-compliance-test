@@ -1,0 +1,11 @@
+{
+  "name": "cip30-compliance-test",
+  "version": "1.0.0",
+  "description": "Simple tool to test CIP-30 compliance for Cardano wallets",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "Apache-2.0"
+}
