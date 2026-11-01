@@ -1,6 +1,6 @@
 /** Wallet compatibility checks and explicit Dijkstra build/sign/submit steps. */
 import { state } from '../app-state.js';
-import * as ui from '../ui.js';
+import * as ui from '../ui.js?v=20261101-3';
 import { buildBatch, buildFeature, requireDijkstra, parseAda, buildParameters, verifyWalletWitnesses } from '../dijkstra.js';
 
 const element = id => document.getElementById(`dijkstra-${id}`);
@@ -8,6 +8,7 @@ const features = ['deposit', 'transfer', 'balances', 'key-guard', 'native-guard'
 const pending = new Map();
 const revisions = new Map();
 let busy = false;
+let initialized = false;
 const stringify = value => JSON.stringify(value, (_, item) => typeof item === 'bigint' ? item.toString() : item, 2);
 const field = (feature, name) => element(`${feature}-${name}`);
 const show = (feature, message) => { field(feature, 'result').textContent = message; };
@@ -21,7 +22,9 @@ const resetTest = feature => {
     show(feature, 'Build a new transaction for the connected wallet.');
 };
 
-export const resetDijkstra = () => features.forEach(resetTest);
+export const resetDijkstra = () => {
+    if (initialized) features.forEach(resetTest);
+};
 
 const slotConfig = () => {
     const magic = state.provider.getNetworkMagic();
@@ -138,6 +141,19 @@ const submit = async feature => {
 };
 
 export const setupDijkstra = () => {
+    if (initialized) return true;
+    const required = [
+        'network-mode', 'zero-time', 'zero-slot', 'slot-length',
+        ...features.flatMap(feature => ['card', 'build', 'sign', 'submit', 'cbor', 'result'].map(name => `${feature}-${name}`)),
+        'deposit-reward', 'deposit-amount', 'transfer-reward', 'transfer-amount',
+        'balances-reward', 'balances-lower', 'balances-upper', 'balances-starting',
+        'batch-count', 'batch-recipient', 'batch-amount',
+    ];
+    if (required.some(id => !element(id))) {
+        document.querySelectorAll('#dijkstra-section button').forEach(button => { button.disabled = true; });
+        ui.log('Dijkstra page and scripts are out of date. Hard-refresh this page to load the matching version. Other wallet tests are still available.', 'error');
+        return false;
+    }
     for (const feature of features) {
         for (const [action, handler] of [['build', build], ['sign', sign], ['submit', submit]]) {
             field(feature, action).addEventListener('click', () => run(feature, () => handler(feature)));
@@ -149,4 +165,6 @@ export const setupDijkstra = () => {
     for (const id of ['network-mode', 'zero-time', 'zero-slot', 'slot-length']) {
         element(id).addEventListener('input', resetDijkstra);
     }
+    initialized = true;
+    return true;
 };
