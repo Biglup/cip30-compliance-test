@@ -1,10 +1,10 @@
 /** Wallet compatibility checks and explicit Dijkstra build/sign/submit steps. */
 import { state } from '../app-state.js';
-import * as ui from '../ui.js?v=20261101-5';
-import { buildBatch, buildFeature, requireDijkstra, parseAda, buildParameters, verifyWalletWitnesses } from '../dijkstra.js?v=20261101-5';
+import * as ui from '../ui.js?v=20261101-6';
+import { buildBatch, buildFeature, requireDijkstra, parseAda, buildParameters, verifyWalletWitnesses } from '../dijkstra.js?v=20261101-6';
 
 const element = id => document.getElementById(`dijkstra-${id}`);
-const features = ['deposit', 'transfer', 'balances', 'key-guard', 'native-guard', 'plutus-guard', 'deferred-mint', 'batch'];
+const features = ['deposit', 'transfer', 'balances', 'key-guard', 'native-guard', 'batch'];
 const pending = new Map();
 const revisions = new Map();
 let busy = false;
@@ -42,7 +42,7 @@ const requireWallet = () => {
     if (!state.wallet) throw new Error('Connect a wallet first.');
 };
 
-const context = async plutus => {
+const context = async () => {
     requireWallet();
     const wallet = state.wallet;
     const provider = state.provider;
@@ -51,7 +51,7 @@ const context = async plutus => {
     const buildParams = buildParameters(params, mode);
     const address = (await wallet.getChangeAddress()).toString();
     return { params: buildParams, mode, networkProtocol: params.protocolVersion?.major, slotConfig: slotConfig(), address, utxos: await wallet.getUnspentOutputs(),
-        collateral: plutus ? await wallet.getCollateral() : [] };
+        collateral: [] };
 };
 
 const run = async (feature, action) => {
@@ -81,7 +81,7 @@ const build = async feature => {
     const current = revisions.get(feature);
     const batch = feature === 'batch';
     const wallet = state.wallet;
-    const ctx = await context(!batch && ['plutus-guard', 'deferred-mint'].includes(feature));
+    const ctx = await context();
     const amount = field(feature, 'amount') ? parseAda(field(feature, 'amount').value.trim()) : undefined;
     let result;
     if (batch) {

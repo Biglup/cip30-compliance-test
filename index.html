@@ -8,7 +8,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="shortcut icon" href="favicon/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
-    <link rel="stylesheet" href="style.css?v=20261101-5">
+    <link rel="stylesheet" href="style.css?v=20261101-6">
 </head>
 <body>
     <div class="app-layout">
@@ -531,7 +531,7 @@
             <p class="section-description">Test wallet signing with real UTxOs. Before the network upgrade, transactions use protocol 12 candidate parameters and cannot be submitted.</p>
             <div class="form-group">
                 <label><input type="checkbox" id="dijkstra-network-mode"> Enable network submission (requires Dijkstra)</label>
-                <p class="test-description">Requires the endpoint’s protocol 12 parameters and V4 cost model. Leave unchecked to test signing only; a diagnostic V4 model is used if the endpoint has none.</p>
+                <p class="test-description">Requires the endpoint’s protocol 12 parameters. Leave unchecked to test signing only.</p>
             </div>
             <details class="form-details">
                 <summary>Custom devnet slot timing</summary>
@@ -605,28 +605,6 @@
                 <div class="form-group"><label for="dijkstra-native-guard-cbor">Transaction CBOR</label><textarea id="dijkstra-native-guard-cbor" rows="3" readonly></textarea></div>
                 <div class="test-result large" id="dijkstra-native-guard-result" role="status" aria-live="polite"></div>
             </div>
-            <div class="tx-test-card" id="dijkstra-plutus-guard-card">
-                <h3>Plutus V4 Guard</h3>
-                <p class="test-description">Build an always-succeeds V4 guard transaction. Requires a separate collateral UTxO.</p>
-                <div class="button-group">
-                    <button id="dijkstra-plutus-guard-build" class="btn btn-test">Build Transaction</button>
-                    <button id="dijkstra-plutus-guard-sign" class="btn btn-secondary" disabled>Sign Transaction</button>
-                    <button id="dijkstra-plutus-guard-submit" class="btn btn-primary" disabled>Submit Transaction</button>
-                </div>
-                <div class="form-group"><label for="dijkstra-plutus-guard-cbor">Transaction CBOR</label><textarea id="dijkstra-plutus-guard-cbor" rows="3" readonly></textarea></div>
-                <div class="test-result large" id="dijkstra-plutus-guard-result" role="status" aria-live="polite"></div>
-            </div>
-            <div class="tx-test-card" id="dijkstra-deferred-mint-card">
-                <h3>Deferred-Redeemer Minting</h3>
-                <p class="test-description">Mint one V4 test token with a redeemer computed after balancing. Requires a separate collateral UTxO.</p>
-                <div class="button-group">
-                    <button id="dijkstra-deferred-mint-build" class="btn btn-test">Build Transaction</button>
-                    <button id="dijkstra-deferred-mint-sign" class="btn btn-secondary" disabled>Sign Transaction</button>
-                    <button id="dijkstra-deferred-mint-submit" class="btn btn-primary" disabled>Submit Transaction</button>
-                </div>
-                <div class="form-group"><label for="dijkstra-deferred-mint-cbor">Transaction CBOR</label><textarea id="dijkstra-deferred-mint-cbor" rows="3" readonly></textarea></div>
-                <div class="test-result large" id="dijkstra-deferred-mint-result" role="status" aria-live="polite"></div>
-            </div>
             <div class="tx-test-card" id="dijkstra-batch-card">
                 <h3>Sub-Transaction Batch</h3>
                 <p class="test-description">Create several wallet-funded intents. Each pays the recipient and requires your wallet’s top-level guard. Amounts increase by one lovelace per intent to keep their IDs distinct.</p>
@@ -655,6 +633,6 @@
 
     <!-- Cometa.js CDN -->
     <script src="https://unpkg.com/@biglup/cometa@2.0.0-rc.2/dist/iife/index.global.js"></script>
-    <script type="module" src="scripts/main.js?v=20261101-5"></script>
+    <script type="module" src="scripts/main.js?v=20261101-6"></script>
 </body>
 </html>
