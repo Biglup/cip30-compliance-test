@@ -7,8 +7,8 @@
  * - Binds all event handlers
  */
 
-import * as ui from './ui.js?v=20261101-7';
-import { setupDijkstra, resetDijkstra } from './handlers/dijkstra-tests.js?v=20261101-7';
+import * as ui from './ui.js?v=20261101-8';
+import { setupDijkstra, resetDijkstra } from './handlers/dijkstra-tests.js?v=20261101-8';
 import { state } from './app-state.js';
 import { detectWallets, waitForWallets } from './wallet-detector.js';
 import { connectWallet, disconnectWallet, isConnected } from './handlers/connect-handler.js';
