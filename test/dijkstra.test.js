@@ -42,6 +42,9 @@ test('both balance interval forms survive serialization', () => {
 test('native guard policy requires the enclosing payment-key guard', () => {
     const [body, witnesses] = decode(results.get('native-guard').cbor);
     const [policy] = witnesses.get(1);
+    const inspected = C.inspectTx(results.get('native-guard').cbor);
+    assert.equal(Object.hasOwn(inspected.body, 'required_signers'), false);
+    assert.deepEqual(inspected.body.guards, [inspected.witness_set.native_scripts[0].credential]);
     assert.equal(policy[0], 6); // RequireGuard native script tag
     assert.deepEqual(policy[1][1], [...body.get(14)][0]);
     assert.equal([...body.get(9).values()][0].values().next().value, 1);
@@ -150,17 +153,15 @@ test('signature verification checks key guards independently of funding keys', a
     try { hash = C.readBlake2bHashData(C.getModule().transaction_get_id(tx)); }
     finally { C.unrefObject(tx); }
     const witness = key => ({ vkey: key.getPublicKey().toHex(), signature: key.sign(hash).toHex() });
-    // Exercise the upcoming guards-only inspector shape using the currently shipped RC2 WASM.
-    const guardsInspector = { ...C, inspectTx(value) {
+    const inspected = C.inspectTx(cbor);
+    assert.equal(Object.hasOwn(inspected.body, 'required_signers'), false);
+    assert.ok(inspected.body.guards.some(guard => guard.tag === 'pubkey_hash' && guard.value === guardHash));
+    const mixedGuardsInspector = { ...C, inspectTx(value) {
         const inspected = C.inspectTx(value);
-        inspected.body.guards = [
-            { tag: 'pubkey_hash', value: guardHash },
-            { tag: 'script_hash', value: '03'.repeat(28) }
-        ];
-        delete inspected.body.required_signers;
+        inspected.body.guards.push({ tag: 'script_hash', value: '03'.repeat(28) });
         return inspected;
     } };
-    for (const api of [C, guardsInspector]) {
+    for (const api of [C, mixedGuardsInspector]) {
         assert.throws(() => verifyWalletWitnesses(api, cbor, [witness(paymentKey)], context.utxos),
             new RegExp(`Wallet did not sign required key ${guardHash}`));
         assert.equal(verifyWalletWitnesses(api, cbor, [witness(paymentKey), witness(guardKey)], context.utxos), 2);
