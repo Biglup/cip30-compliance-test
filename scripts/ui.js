@@ -19,6 +19,7 @@ export const cip142Section = document.getElementById('cip142-section');
 export const txBuilderSection = document.getElementById('tx-builder-section');
 export const govTxSection = document.getElementById('gov-tx-section');
 export const rawTxSection = document.getElementById('raw-tx-section');
+export const dijkstraSection = document.getElementById('dijkstra-section');
 
 // CIP-30 Basic test buttons
 export const testGetNetworkId = document.getElementById('test-getNetworkId');
@@ -295,6 +296,7 @@ export const showTestSections = () => {
     mintSection.classList.remove('hidden');
     complexSection.classList.remove('hidden');
     rawTxSection.classList.remove('hidden');
+    dijkstraSection.classList.remove('hidden');
 };
 
 /**
@@ -312,6 +314,7 @@ export const hideTestSections = () => {
     mintSection.classList.add('hidden');
     complexSection.classList.add('hidden');
     rawTxSection.classList.add('hidden');
+    dijkstraSection.classList.add('hidden');
 };
 
 /**
