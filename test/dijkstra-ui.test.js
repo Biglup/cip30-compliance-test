@@ -6,7 +6,7 @@ import * as C from '@biglup/cometa';
 import { localContext } from './helpers/dijkstra-local.js';
 
 let state, resetDijkstra, ctx, wallet;
-const el = id => document.getElementById(`dijkstra-${id}`);
+const el = id => document.getElementById(`dijkstra-${['build', 'sign', 'submit', 'result', 'cbor', 'count', 'recipient', 'amount'].includes(id) ? `batch-${id}` : id === 'batch' ? 'batch-build' : id}`);
 const click = async id => {
     el(id).click();
     for (let n = 0; n < 500 && el('build').disabled; n++) await new Promise(resolve => setTimeout(resolve, 10));
@@ -20,7 +20,8 @@ const witnessesFor = cbor => {
     return [{ vkey: key.getPublicKey().toHex(), signature: key.sign(hash).toHex() }];
 };
 const connect = () => {
-    el('mode').value = 'network';
+    el('network-mode').checked = true;
+    resetDijkstra();
     wallet.signTransaction = async cbor => witnessesFor(cbor);
     state.wallet = wallet;
     state.provider = { getParameters: async () => ctx.params, getNetworkMagic: () => C.NetworkMagic.Preview };
@@ -103,12 +104,8 @@ test('disconnect while signing discards the response and disables submission', a
     assert.equal(el('cbor').value, '');
 });
 
-test('mainnet and incomplete custom timing are rejected', async () => {
+test('custom networks require their own slot timing', async () => {
     connect();
-    state.networkId = 1;
-    await click('batch');
-    assert.match(el('result').textContent, /test networks only/);
-    state.networkId = 0;
     state.provider.getNetworkMagic = () => 42;
     await click('batch');
     assert.match(el('result').textContent, /slot timing/);
@@ -120,7 +117,7 @@ test('mainnet and incomplete custom timing are rejected', async () => {
 
 test('compatibility mode uses real inputs, verifies signatures, and never enables submission on Conway', async () => {
     connect();
-    el('mode').value = 'compatibility';
+    el('network-mode').checked = false;
     state.provider.getParameters = async () => ({ ...ctx.params, protocolVersion: { major: 10 } });
     await click('batch');
     assert.match(el('result').textContent, /endpoint protocol 10/);
@@ -176,4 +173,57 @@ test('all twelve test sections appear together on connection and hide on disconn
     assert.ok(sections.every(section => !section.classList.contains('hidden')));
     ui.hideTestSections();
     assert.ok(sections.every(section => section.classList.contains('hidden')));
+});
+
+
+test('each feature has its own controls and pending state, without a feature dropdown', async () => {
+    connect();
+    assert.equal(document.querySelector('#dijkstra-section select'), null);
+    assert.equal(document.getElementById('dijkstra-apply'), null);
+    await click('key-guard-build');
+    const keyCbor = el('key-guard-cbor').value;
+    assert.ok(keyCbor);
+    assert.equal(el('key-guard-sign').disabled, false);
+    await click('batch');
+    assert.equal(el('key-guard-cbor').value, keyCbor);
+    assert.equal(el('key-guard-sign').disabled, false);
+    el('count').dispatchEvent(new window.Event('input'));
+    assert.equal(el('sign').disabled, true);
+    assert.equal(el('key-guard-sign').disabled, false);
+    await click('key-guard-sign');
+    assert.match(el('key-guard-result').textContent, /signature\(s\) verified/);
+});
+
+test('mainnet wallets can build and sign with mainnet addresses', async () => {
+    connect();
+    el('network-mode').checked = false;
+    state.networkId = 1;
+    state.provider.getNetworkMagic = () => C.NetworkMagic.Mainnet;
+    state.provider.getParameters = async () => ({ ...ctx.params, protocolVersion: { major: 10, minor: 0 } });
+    const original = ctx;
+    const credential = C.Address.fromString(ctx.address).asEnterprise().getCredential();
+    const address = C.EnterpriseAddress.fromCredentials(C.NetworkId.Mainnet, credential).toAddress().toString();
+    ctx = { ...ctx, address, utxos: ctx.utxos.map(utxo => ({ ...utxo, output: { ...utxo.output, address } })) };
+    try {
+        await click('batch');
+        assert.ok(el('cbor').value);
+        await click('sign');
+        assert.match(el('result').textContent, /signature\(s\) verified/);
+        assert.equal(el('submit').disabled, true);
+    } finally {
+        ctx = original;
+    }
+});
+
+test('every feature card builds through its own controls and reads only its own fields', async () => {
+    connect();
+    state.cip30Api = { getRewardAddresses: async () => [C.RewardAddress.fromBech32(ctx.rewardAddress).toAddress().toHex()] };
+    state.provider.getRewardsBalance = async () => 10_000_000n;
+    for (const feature of ['deposit', 'transfer', 'balances', 'key-guard', 'native-guard', 'plutus-guard', 'deferred-mint']) {
+        if (el(`${feature}-reward`)) el(`${feature}-reward`).value = ctx.rewardAddress;
+        await click(`${feature}-build`);
+        assert.ok(el(`${feature}-cbor`).value, `${feature}: ${el(`${feature}-result`).textContent}`);
+        assert.equal(el(`${feature}-sign`).disabled, false);
+        assert.equal(el(`${feature}-submit`).disabled, true);
+    }
 });
