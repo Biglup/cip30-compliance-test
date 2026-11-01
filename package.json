@@ -5,7 +5,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test test/*.test.js"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@biglup/cometa": "2.0.0-rc.1",
+    "cbor-x": "1.6.0",
+    "jsdom": "26.1.0"
+  }
 }
