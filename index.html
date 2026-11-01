@@ -526,76 +526,121 @@
             <div class="test-result large" id="result-raw-tx"></div>
         </section>
 
-        <section class="card" id="dijkstra-section">
+        <section class="card hidden" id="dijkstra-section">
             <h2>13. Dijkstra Era</h2>
-            <p class="section-description">Cometa.js 2.0.0-rc.1 · Protocol 12. Test your wallet’s Dijkstra signing support, or submit on a Dijkstra test network. A successful build is not ledger validation.</p>
-            <div class="tx-test-card">
-                <h3>Build with your wallet</h3>
-                <p>Connect your testnet wallet above. Compatibility mode tests signing before the network upgrade. Network mode requires protocol 12. Reward accounts used below must be registered; account transfers use your wallet’s first reward account. Plutus tests need separate wallet collateral. Network mode also requires the endpoint’s Plutus V4 cost model.</p>
-                <div class="form-group">
-                    <label for="dijkstra-mode">Test mode</label>
-                    <select id="dijkstra-mode">
-                        <option value="compatibility">Wallet compatibility — signing only</option>
-                        <option value="network">Dijkstra network — signing and submission</option>
-                    </select>
-                    <p>Compatibility mode uses real wallet UTxOs and current fees with protocol 12. If the endpoint has no V4 cost model, it uses a diagnostic model. These transactions cannot be submitted from this page. Network mode uses the endpoint’s parameters unchanged.</p>
-                </div>
-                <details>
-                    <summary>Custom devnet slot timing</summary>
-                    <p>Required for a custom network magic. Use the devnet’s genesis timing.</p>
-                    <div class="form-row">
-                        <div class="form-group"><label for="dijkstra-zero-time">Reference Unix time (milliseconds)</label><input id="dijkstra-zero-time" inputmode="numeric" placeholder="Genesis Unix milliseconds"></div>
-                        <div class="form-group"><label for="dijkstra-zero-slot">Reference slot</label><input id="dijkstra-zero-slot" inputmode="numeric" value="0"></div>
-                        <div class="form-group"><label for="dijkstra-slot-length">Slot length (milliseconds)</label><input id="dijkstra-slot-length" inputmode="numeric" value="1000"></div>
-                    </div>
-                </details>
+            <p class="section-description">Test wallet signing with real UTxOs. Before the network upgrade, transactions use protocol 12 candidate parameters and cannot be submitted.</p>
+            <div class="form-group">
+                <label><input type="checkbox" id="dijkstra-network-mode"> Enable network submission (requires Dijkstra)</label>
+                <p class="test-description">Requires the endpoint’s protocol 12 parameters and V4 cost model. Leave unchecked to test signing only; a diagnostic V4 model is used if the endpoint has none.</p>
+            </div>
+            <details class="form-details">
+                <summary>Custom devnet slot timing</summary>
+                <p class="test-description">For custom network magic only. Use your devnet’s genesis settings.</p>
+                <div class="form-group"><label for="dijkstra-zero-time">Reference Unix time (milliseconds)</label><input type="text" id="dijkstra-zero-time" inputmode="numeric" placeholder="Genesis Unix milliseconds"></div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="dijkstra-feature">Feature</label>
-                        <select id="dijkstra-feature">
-                            <option value="deposit">Direct reward-account deposit</option>
-                            <option value="transfer">Reward-account to reward-account transfer</option>
-                            <option value="balances">Execution and starting balance constraints</option>
-                            <option value="key-guard">Payment-key guard</option>
-                            <option value="native-guard">Native RequireGuard minting policy</option>
-                            <option value="plutus-guard">Plutus V4 guard (native VM evaluation)</option>
-                            <option value="deferred-mint">Plutus V4 minting with a deferred redeemer</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label for="dijkstra-amount">Deposit / transfer / base amount per intent (ADA)</label><input id="dijkstra-amount" inputmode="decimal" value="2"></div>
+                    <div class="form-group"><label for="dijkstra-zero-slot">Reference slot</label><input type="text" id="dijkstra-zero-slot" inputmode="numeric" value="0"></div>
+                    <div class="form-group"><label for="dijkstra-slot-length">Slot length (milliseconds)</label><input type="text" id="dijkstra-slot-length" inputmode="numeric" value="1000"></div>
                 </div>
-                <div class="form-group"><label for="dijkstra-reward">Destination or constrained reward account</label><input id="dijkstra-reward" placeholder="stake_test1…"></div>
-                <details>
-                    <summary>Balance constraints (ADA)</summary>
-                    <p>These are assertions, not balance changes. Choose values matching the account on your network.</p>
-                    <div class="form-row">
-                        <div class="form-group"><label for="dijkstra-lower">Inclusive lower bound</label><input id="dijkstra-lower" inputmode="decimal" value="0"></div>
-                        <div class="form-group"><label for="dijkstra-upper">Exclusive upper bound</label><input id="dijkstra-upper" inputmode="decimal" value="100"></div>
-                        <div class="form-group"><label for="dijkstra-starting">Exact balance at block start</label><input id="dijkstra-starting" inputmode="decimal" value="0"></div>
-                    </div>
-                </details>
-                <button id="dijkstra-build" class="btn btn-test">Build selected feature</button>
-                <h3>Batch several sub-transactions</h3>
-                <p>Each intent pays one recipient and requires your wallet’s top-level payment-key guard. Your wallet funds all outputs and the fee. Intent amounts increase by one lovelace per row to give each a distinct ID. These output-only intents do not require independent signatures.</p>
-                <div class="form-row">
-                    <div class="form-group"><label for="dijkstra-count">Number of intents (2–20)</label><input id="dijkstra-count" type="number" min="2" max="20" step="1" value="3"></div>
-                    <div class="form-group"><label for="dijkstra-recipient">Recipient (blank sends to your change address)</label><input id="dijkstra-recipient" placeholder="addr_test1…"></div>
-                </div>
-                <button id="dijkstra-batch" class="btn btn-test">Build batch</button>
+            </details>
+            <div class="tx-test-card" id="dijkstra-deposit-card">
+                <h3>Direct Reward-Account Deposit</h3>
+                <p class="test-description">Deposit ADA from wallet UTxOs into a registered reward account.</p>
+                <div class="form-group"><label for="dijkstra-deposit-reward">Destination reward account</label><input id="dijkstra-deposit-reward" type="text" placeholder="stake_test1…"></div>
+                <div class="form-group"><label for="dijkstra-deposit-amount">Amount (ADA)</label><input id="dijkstra-deposit-amount" type="text" inputmode="decimal" value="2"></div>
                 <div class="button-group">
-                    <button id="dijkstra-sign" class="btn btn-secondary" disabled>Sign with wallet</button>
-                    <button id="dijkstra-submit" class="btn btn-primary" disabled>Submit to test network</button>
+                    <button id="dijkstra-deposit-build" class="btn btn-test">Build Transaction</button>
+                    <button id="dijkstra-deposit-sign" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="dijkstra-deposit-submit" class="btn btn-primary" disabled>Submit Transaction</button>
                 </div>
-                <div class="form-group"><label for="dijkstra-cbor">Full transaction CBOR</label><textarea id="dijkstra-cbor" rows="5" readonly></textarea></div>
+                <div class="form-group"><label for="dijkstra-deposit-cbor">Transaction CBOR</label><textarea id="dijkstra-deposit-cbor" rows="3" readonly></textarea></div>
+                <div class="test-result large" id="dijkstra-deposit-result" role="status" aria-live="polite"></div>
             </div>
-            <div class="tx-test-card">
-                <h3>Apply a script parameter</h3>
-                <p>Apply one integer parameter to a compiled Plutus V4 script. No wallet or network needed.</p>
-                <div class="form-group"><label for="dijkstra-script">Parameterized script (CBOR hex)</label><input id="dijkstra-script" placeholder="Compiled validator CBOR"></div>
-                <div class="form-group"><label for="dijkstra-parameter">Integer parameter</label><input id="dijkstra-parameter" value="42" inputmode="numeric"></div>
-                <button id="dijkstra-apply" class="btn btn-test">Apply parameter</button>
+            <div class="tx-test-card" id="dijkstra-transfer-card">
+                <h3>Reward-Account Transfer</h3>
+                <p class="test-description">Transfer rewards from your wallet’s first reward account to another registered reward account.</p>
+                <div class="form-group"><label for="dijkstra-transfer-reward">Destination reward account</label><input id="dijkstra-transfer-reward" type="text" placeholder="stake_test1…"></div>
+                <div class="form-group"><label for="dijkstra-transfer-amount">Amount (ADA)</label><input id="dijkstra-transfer-amount" type="text" inputmode="decimal" value="2"></div>
+                <div class="button-group">
+                    <button id="dijkstra-transfer-build" class="btn btn-test">Build Transaction</button>
+                    <button id="dijkstra-transfer-sign" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="dijkstra-transfer-submit" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="form-group"><label for="dijkstra-transfer-cbor">Transaction CBOR</label><textarea id="dijkstra-transfer-cbor" rows="3" readonly></textarea></div>
+                <div class="test-result large" id="dijkstra-transfer-result" role="status" aria-live="polite"></div>
             </div>
-            <pre class="test-result large" id="dijkstra-result" role="status" aria-live="polite">Connect a wallet, choose a test mode, and build a transaction.</pre>
+            <div class="tx-test-card" id="dijkstra-balances-card">
+                <h3>Account Balance Constraints</h3>
+                <p class="test-description">Test the account balance at execution and at the start of the block.</p>
+                <div class="form-group"><label for="dijkstra-balances-reward">Reward account</label><input id="dijkstra-balances-reward" type="text" placeholder="stake_test1…"></div>
+                <div class="form-group"><label for="dijkstra-balances-lower">Inclusive lower bound (ADA)</label><input id="dijkstra-balances-lower" type="text" inputmode="decimal" value="0"></div>
+                <div class="form-group"><label for="dijkstra-balances-upper">Exclusive upper bound (ADA)</label><input id="dijkstra-balances-upper" type="text" inputmode="decimal" value="100"></div>
+                <div class="form-group"><label for="dijkstra-balances-starting">Exact block-start balance (ADA)</label><input id="dijkstra-balances-starting" type="text" inputmode="decimal" value="0"></div>
+                <div class="button-group">
+                    <button id="dijkstra-balances-build" class="btn btn-test">Build Transaction</button>
+                    <button id="dijkstra-balances-sign" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="dijkstra-balances-submit" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="form-group"><label for="dijkstra-balances-cbor">Transaction CBOR</label><textarea id="dijkstra-balances-cbor" rows="3" readonly></textarea></div>
+                <div class="test-result large" id="dijkstra-balances-result" role="status" aria-live="polite"></div>
+            </div>
+            <div class="tx-test-card" id="dijkstra-key-guard-card">
+                <h3>Payment-Key Guard</h3>
+                <p class="test-description">Require your wallet’s payment key to authorize the transaction.</p>
+                <div class="button-group">
+                    <button id="dijkstra-key-guard-build" class="btn btn-test">Build Transaction</button>
+                    <button id="dijkstra-key-guard-sign" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="dijkstra-key-guard-submit" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="form-group"><label for="dijkstra-key-guard-cbor">Transaction CBOR</label><textarea id="dijkstra-key-guard-cbor" rows="3" readonly></textarea></div>
+                <div class="test-result large" id="dijkstra-key-guard-result" role="status" aria-live="polite"></div>
+            </div>
+            <div class="tx-test-card" id="dijkstra-native-guard-card">
+                <h3>Native Guard Minting</h3>
+                <p class="test-description">Mint one test token using a native policy that requires your wallet’s payment-key guard.</p>
+                <div class="button-group">
+                    <button id="dijkstra-native-guard-build" class="btn btn-test">Build Transaction</button>
+                    <button id="dijkstra-native-guard-sign" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="dijkstra-native-guard-submit" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="form-group"><label for="dijkstra-native-guard-cbor">Transaction CBOR</label><textarea id="dijkstra-native-guard-cbor" rows="3" readonly></textarea></div>
+                <div class="test-result large" id="dijkstra-native-guard-result" role="status" aria-live="polite"></div>
+            </div>
+            <div class="tx-test-card" id="dijkstra-plutus-guard-card">
+                <h3>Plutus V4 Guard</h3>
+                <p class="test-description">Build an always-succeeds V4 guard transaction. Requires a separate collateral UTxO.</p>
+                <div class="button-group">
+                    <button id="dijkstra-plutus-guard-build" class="btn btn-test">Build Transaction</button>
+                    <button id="dijkstra-plutus-guard-sign" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="dijkstra-plutus-guard-submit" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="form-group"><label for="dijkstra-plutus-guard-cbor">Transaction CBOR</label><textarea id="dijkstra-plutus-guard-cbor" rows="3" readonly></textarea></div>
+                <div class="test-result large" id="dijkstra-plutus-guard-result" role="status" aria-live="polite"></div>
+            </div>
+            <div class="tx-test-card" id="dijkstra-deferred-mint-card">
+                <h3>Deferred-Redeemer Minting</h3>
+                <p class="test-description">Mint one V4 test token with a redeemer computed after balancing. Requires a separate collateral UTxO.</p>
+                <div class="button-group">
+                    <button id="dijkstra-deferred-mint-build" class="btn btn-test">Build Transaction</button>
+                    <button id="dijkstra-deferred-mint-sign" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="dijkstra-deferred-mint-submit" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="form-group"><label for="dijkstra-deferred-mint-cbor">Transaction CBOR</label><textarea id="dijkstra-deferred-mint-cbor" rows="3" readonly></textarea></div>
+                <div class="test-result large" id="dijkstra-deferred-mint-result" role="status" aria-live="polite"></div>
+            </div>
+            <div class="tx-test-card" id="dijkstra-batch-card">
+                <h3>Sub-Transaction Batch</h3>
+                <p class="test-description">Create several wallet-funded intents. Each pays the recipient and requires your wallet’s top-level guard. Amounts increase by one lovelace per intent to keep their IDs distinct.</p>
+                <div class="form-group"><label for="dijkstra-batch-count">Number of intents (2–20)</label><input id="dijkstra-batch-count" type="number" min="2" max="20" step="1" value="3"></div>
+                <div class="form-group"><label for="dijkstra-batch-recipient">Recipient (blank uses your change address)</label><input id="dijkstra-batch-recipient" type="text" placeholder="addr_test1…"></div>
+                <div class="form-group"><label for="dijkstra-batch-amount">Base amount per intent (ADA)</label><input id="dijkstra-batch-amount" type="text" inputmode="decimal" value="2"></div>
+                <div class="button-group">
+                    <button id="dijkstra-batch-build" class="btn btn-test">Build Batch</button>
+                    <button id="dijkstra-batch-sign" class="btn btn-secondary" disabled>Sign Transaction</button>
+                    <button id="dijkstra-batch-submit" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="form-group"><label for="dijkstra-batch-cbor">Transaction CBOR</label><textarea id="dijkstra-batch-cbor" rows="3" readonly></textarea></div>
+                <div class="test-result large" id="dijkstra-batch-result" role="status" aria-live="polite"></div>
+            </div>
         </section>
 
         <footer class="footer">
