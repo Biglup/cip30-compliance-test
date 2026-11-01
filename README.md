@@ -1,5 +1,5 @@
 # cip30-compliance-test
-Test CIP-30 wallet APIs and transaction signing with [Cometa.js 2.0.0-rc.4](https://www.npmjs.com/package/@biglup/cometa/v/2.0.0-rc.4).
+Test CIP-30 wallet APIs and transaction signing with [Cometa.js 2.0.0-rc.3](https://www.npmjs.com/package/@biglup/cometa/v/2.0.0-rc.3).
 
 ## Local / custom network
 

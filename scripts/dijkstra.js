@@ -1,7 +1,7 @@
 /** Dijkstra transaction recipes shared by the page and integration tests. */
 import { plutusV4Costs } from './dijkstra-cost-model.js';
 
-export const COMETA_VERSION = '2.0.0-rc.4';
+export const COMETA_VERSION = '2.0.0-rc.3';
 export const utxoId = utxo => `${utxo.input.txId}#${utxo.input.index}`;
 
 export const parseAda = value => {
