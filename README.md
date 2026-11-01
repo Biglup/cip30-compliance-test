@@ -22,17 +22,19 @@ The network and wallet can also be preselected for automated runs with
 
 ## Dijkstra wallet tests
 
-Connect a testnet wallet and open **Dijkstra Era**. Choose a mode:
+Connect a wallet on any network and open **Dijkstra Era**. Each feature has its
+own card, inputs, transaction CBOR, result, and Build / Sign / Submit buttons.
+The **Enable network submission** checkbox controls the mode:
 
-- **Wallet compatibility — signing only:** use the connected wallet’s real UTxOs,
+- **Submission disabled (default):** use the connected wallet’s real UTxOs,
   addresses and current fees with protocol 12. If the endpoint lacks a Plutus V4
   cost model, use the diagnostic model shipped with the app. This mode tests
   wallet parsing and signing before a network upgrade; submission stays disabled.
-- **Dijkstra network — signing and submission:** use the endpoint’s protocol
+- **Submission enabled:** use the endpoint’s protocol
   parameters unchanged. Requires protocol 12, and its V4 cost model for Plutus
   tests. Build, sign and submit are separate actions.
 
-The feature selector covers direct reward-account deposits, account-to-account
+The test cards cover direct reward-account deposits, account-to-account
 transfers, execution-time and block-start balance constraints, key guards,
 native `RequireGuard` minting, Plutus V4 guards, and deferred-redeemer minting.
 Plutus evaluation uses Cometa’s bundled native VM.
