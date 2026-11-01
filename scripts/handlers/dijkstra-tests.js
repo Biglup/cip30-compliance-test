@@ -1,7 +1,7 @@
 /** Wallet compatibility checks and explicit Dijkstra build/sign/submit steps. */
 import { state } from '../app-state.js';
 import * as ui from '../ui.js';
-import { buildBatch, buildFeature, requireDijkstra, parseAda, v4Script, buildParameters, verifyWalletWitnesses } from '../dijkstra.js';
+import { buildBatch, buildFeature, requireDijkstra, parseAda, buildParameters, verifyWalletWitnesses } from '../dijkstra.js';
 
 const element = id => document.getElementById(`dijkstra-${id}`);
 let pending = null;
@@ -136,14 +136,6 @@ export const setupDijkstra = () => {
     element('batch').addEventListener('click', () => run(() => build(true)));
     element('sign').addEventListener('click', () => run(sign));
     element('submit').addEventListener('click', () => run(submit));
-    element('apply').addEventListener('click', () => run(async () => {
-        const bytes = element('script').value.trim();
-        if (!/^(?:[\da-f]{2})+$/i.test(bytes)) throw new Error('Enter a script as CBOR hex.');
-        const value = element('parameter').value.trim();
-        if (!/^-?\d+$/.test(value)) throw new Error('Enter an integer script parameter.');
-        const script = Cometa.applyParamsToScript({ ...v4Script(Cometa), bytes }, [BigInt(value)]);
-        show(`Parameter applied with the native VM. This does not validate the resulting script.\n${stringify(script)}\nScript hash: ${Cometa.computeScriptHash(script)}`);
-    }));
     document.querySelectorAll('#dijkstra-section input, #dijkstra-section select').forEach(input => {
         input.addEventListener('input', resetDijkstra);
     });

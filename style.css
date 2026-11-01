@@ -371,6 +371,33 @@ textarea {
     font-size: 0.813rem;
 }
 
+/* Dijkstra form layout */
+#dijkstra-section .form-row {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+#dijkstra-section .form-group {
+    min-width: 0;
+}
+
+.form-details {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-details summary {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: var(--spacing-sm);
+}
+
+@media (max-width: 640px) {
+    #dijkstra-section .form-row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 /* Buttons */
 .button-group {
     display: flex;
