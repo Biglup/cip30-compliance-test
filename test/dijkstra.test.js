@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as C from '@biglup/cometa';
 import { Decoder } from 'cbor-x';
-import { buildBatch, buildFeature, createBuilder, parseAda, requireDijkstra, COMETA_VERSION, buildParameters } from '../scripts/dijkstra.js';
+import { buildBatch, buildFeature, createBuilder, parseAda, requireDijkstra, COMETA_VERSION, buildParameters, verifyWalletWitnesses } from '../scripts/dijkstra.js';
 import { localContext, runLocalChecks } from './helpers/dijkstra-local.js';
 
 const decoder = new Decoder({ mapsAsObjects: false });
@@ -131,4 +131,38 @@ test('the published browser bundle runs every feature without Node shims', async
     runInContext(readFileSync(new URL('../node_modules/@biglup/cometa/dist/iife/index.global.js', import.meta.url), 'utf8'), sandbox);
     await sandbox.Cometa.ready();
     for (const result of await runLocalChecks(sandbox.Cometa)) assert.equal(result.passed, true, `${result.name}: ${result.error}`);
+});
+
+
+test('signature verification checks key guards independently of funding keys', async () => {
+    const context = localContext(C);
+    const paymentKey = C.Ed25519PrivateKey.fromNormalHex('01'.repeat(32));
+    const guardKey = C.Ed25519PrivateKey.fromNormalHex('02'.repeat(32));
+    const guardHash = guardKey.getPublicKey().toHashHex();
+    const builder = createBuilder(C, context);
+    let cbor;
+    try {
+        cbor = await builder.addGuard({ type: C.CredentialType.KeyHash, hash: guardHash })
+            .sendLovelace({ address: context.address, amount: 2_000_000n }).build();
+    } finally { builder.dispose(); }
+    const tx = C.readTransactionFromCbor(cbor);
+    let hash;
+    try { hash = C.readBlake2bHashData(C.getModule().transaction_get_id(tx)); }
+    finally { C.unrefObject(tx); }
+    const witness = key => ({ vkey: key.getPublicKey().toHex(), signature: key.sign(hash).toHex() });
+    // Exercise the upcoming guards-only inspector shape using the currently shipped RC2 WASM.
+    const guardsInspector = { ...C, inspectTx(value) {
+        const inspected = C.inspectTx(value);
+        inspected.body.guards = [
+            { tag: 'pubkey_hash', value: guardHash },
+            { tag: 'script_hash', value: '03'.repeat(28) }
+        ];
+        delete inspected.body.required_signers;
+        return inspected;
+    } };
+    for (const api of [C, guardsInspector]) {
+        assert.throws(() => verifyWalletWitnesses(api, cbor, [witness(paymentKey)], context.utxos),
+            new RegExp(`Wallet did not sign required key ${guardHash}`));
+        assert.equal(verifyWalletWitnesses(api, cbor, [witness(paymentKey), witness(guardKey)], context.utxos), 2);
+    }
 });

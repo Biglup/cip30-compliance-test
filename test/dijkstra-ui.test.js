@@ -222,9 +222,12 @@ test('mainnet wallets can build and sign with mainnet addresses', async () => {
 
 test('every feature card builds through its own controls and reads only its own fields', async () => {
     connect();
+    assert.equal(document.querySelectorAll('#dijkstra-section .tx-test-card').length, 6);
+    assert.equal(document.getElementById('dijkstra-plutus-guard-card'), null);
+    assert.equal(document.getElementById('dijkstra-deferred-mint-card'), null);
     state.cip30Api = { getRewardAddresses: async () => [C.RewardAddress.fromBech32(ctx.rewardAddress).toAddress().toHex()] };
     state.provider.getRewardsBalance = async () => 10_000_000n;
-    for (const feature of ['deposit', 'transfer', 'balances', 'key-guard', 'native-guard', 'plutus-guard', 'deferred-mint']) {
+    for (const feature of ['deposit', 'transfer', 'balances', 'key-guard', 'native-guard']) {
         if (el(`${feature}-reward`)) el(`${feature}-reward`).value = ctx.rewardAddress;
         await click(`${feature}-build`);
         assert.ok(el(`${feature}-cbor`).value, `${feature}: ${el(`${feature}-result`).textContent}`);

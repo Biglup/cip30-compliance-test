@@ -27,17 +27,14 @@ own card, inputs, transaction CBOR, result, and Build / Sign / Submit buttons.
 The **Enable network submission** checkbox controls the mode:
 
 - **Submission disabled (default):** use the connected wallet’s real UTxOs,
-  addresses and current fees with protocol 12. If the endpoint lacks a Plutus V4
-  cost model, use the diagnostic model shipped with the app. This mode tests
+  addresses and current fees with protocol 12. This mode tests
   wallet parsing and signing before a network upgrade; submission stays disabled.
 - **Submission enabled:** use the endpoint’s protocol
-  parameters unchanged. Requires protocol 12, and its V4 cost model for Plutus
-  tests. Build, sign and submit are separate actions.
+  parameters unchanged. Requires protocol 12. Build, sign and submit are separate actions.
 
 The test cards cover direct reward-account deposits, account-to-account
 transfers, execution-time and block-start balance constraints, key guards,
-native `RequireGuard` minting, Plutus V4 guards, and deferred-redeemer minting.
-Plutus evaluation uses Cometa’s bundled native VM.
+and native `RequireGuard` minting.
 
 For account operations, use registered reward accounts. Transfers withdraw from
 the wallet’s first reward account, so it must have sufficient rewards and the

@@ -167,6 +167,9 @@ export const verifyWalletWitnesses = (C, cbor, witnesses, utxos) => {
     }
     const body = C.inspectTx(cbor).body;
     const required = new Set((body.required_signers || []).filter(value => typeof value === 'string'));
+    for (const guard of body.guards || []) {
+        if (guard.tag === 'pubkey_hash') required.add(guard.value);
+    }
     for (const input of [...body.inputs, ...(body.collateral || [])]) {
         const utxo = utxos.find(item => item.input.txId === input.transaction_id && item.input.index === input.index);
         if (!utxo) throw new Error('Cannot verify a signature for an unresolved wallet input.');
