@@ -1,7 +1,7 @@
 /** Wallet compatibility checks and explicit Dijkstra build/sign/submit steps. */
 import { state } from '../app-state.js';
-import * as ui from '../ui.js?v=20261101-6';
-import { buildBatch, buildFeature, requireDijkstra, parseAda, buildParameters, verifyWalletWitnesses } from '../dijkstra.js?v=20261101-6';
+import * as ui from '../ui.js?v=20261101-9';
+import { buildBatch, buildFeature, requireDijkstra, parseAda, buildParameters, verifyWalletWitnesses } from '../dijkstra.js?v=20261101-9';
 
 const element = id => document.getElementById(`dijkstra-${id}`);
 const features = ['deposit', 'transfer', 'balances', 'key-guard', 'native-guard', 'batch'];
