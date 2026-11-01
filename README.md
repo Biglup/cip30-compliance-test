@@ -35,8 +35,7 @@ Connect a testnet wallet and open **Dijkstra Era**. Choose a mode:
 The feature selector covers direct reward-account deposits, account-to-account
 transfers, execution-time and block-start balance constraints, key guards,
 native `RequireGuard` minting, Plutus V4 guards, and deferred-redeemer minting.
-Plutus evaluation uses Cometa’s bundled native VM. A separate tool applies an
-integer parameter to a compiled V4 script.
+Plutus evaluation uses Cometa’s bundled native VM.
 
 For account operations, use registered reward accounts. Transfers withdraw from
 the wallet’s first reward account, so it must have sufficient rewards and the
