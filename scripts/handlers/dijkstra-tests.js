@@ -1,7 +1,7 @@
 /** Wallet compatibility checks and explicit Dijkstra build/sign/submit steps. */
 import { state } from '../app-state.js';
-import * as ui from '../ui.js?v=20261101-3';
-import { buildBatch, buildFeature, requireDijkstra, parseAda, buildParameters, verifyWalletWitnesses } from '../dijkstra.js';
+import * as ui from '../ui.js?v=20261101-4';
+import { buildBatch, buildFeature, requireDijkstra, parseAda, buildParameters, verifyWalletWitnesses } from '../dijkstra.js?v=20261101-4';
 
 const element = id => document.getElementById(`dijkstra-${id}`);
 const features = ['deposit', 'transfer', 'balances', 'key-guard', 'native-guard', 'plutus-guard', 'deferred-mint', 'batch'];
@@ -112,7 +112,7 @@ const build = async feature => {
     field(feature, 'cbor').value = result.cbor;
     show(feature, `${ctx.mode === 'network' ? 'Built with the endpoint’s protocol 12 parameters.' : `SIGNING TEST ONLY — endpoint protocol ${ctx.networkProtocol}, candidate protocol 12 parameters. Submission disabled.`} Not yet signed.\n${(result.details || []).join('\n')}\n`
         + (result.intents ? `Sub-transactions:\n${result.intents.map(item => `${item.id} — ${item.amount} lovelace\n${item.cbor}`).join('\n\n')}\n\n` : '')
-        + `Transaction summary (RC1 omits some Dijkstra fields; use the full CBOR):\n${stringify(Cometa.inspectTx(result.cbor))}`);
+        + `Transaction summary:\n${stringify(Cometa.inspectTx(result.cbor))}`);
 };
 
 const sign = async feature => {

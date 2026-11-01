@@ -1,7 +1,7 @@
 /** Dijkstra transaction recipes shared by the page and integration tests. */
 import { plutusV4Costs } from './dijkstra-cost-model.js';
 
-export const COMETA_VERSION = '2.0.0-rc.1';
+export const COMETA_VERSION = '2.0.0-rc.2';
 export const utxoId = utxo => `${utxo.input.txId}#${utxo.input.index}`;
 
 export const parseAda = value => {
@@ -94,7 +94,6 @@ export const buildFeature = async (C, context, options) => {
                 C.RewardAddress.fromBech32(rewardAddress);
                 if (amount <= 0n) throw new Error('Deposit amount must be positive.');
                 if (feature === 'transfer') {
-                    // The object form also avoids the string-withdrawal bug in RC1.
                     builder.withdrawRewards({ rewardAddress: C.RewardAddress.fromBech32(sourceRewardAddress), amount });
                 }
                 builder.addDirectDeposit(rewardAddress, amount);

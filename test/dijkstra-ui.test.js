@@ -58,6 +58,11 @@ test('build, rejected signature, retry, sign, submit flow uses only the built CB
     connect();
     await click('batch');
     assert.match(el('result').textContent, /Sub-transactions/);
+    const summary = el('result').textContent;
+    assert.doesNotMatch(summary, /omits|missing fields|use the full CBOR/);
+    const inspected = JSON.parse(summary.split('Transaction summary:\n')[1]);
+    assert.equal(inspected.body.sub_transactions.length, Number(el('count').value));
+    assert.ok(inspected.body.sub_transactions.every(tx => tx.body.outputs.length > 0 && tx.witness_set));
     const unsigned = el('cbor').value;
     assert.ok(unsigned.length > 0);
     assert.equal(el('submit').disabled, true);
