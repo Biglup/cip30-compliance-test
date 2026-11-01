@@ -1,5 +1,5 @@
 # cip30-compliance-test
-Test CIP-30 wallet APIs and transaction signing with [Cometa.js 2.0.0-rc.1](https://www.npmjs.com/package/@biglup/cometa/v/2.0.0-rc.1).
+Test CIP-30 wallet APIs and transaction signing with [Cometa.js 2.0.0-rc.2](https://www.npmjs.com/package/@biglup/cometa/v/2.0.0-rc.2).
 
 ## Local / custom network
 
@@ -55,7 +55,7 @@ and ID, then requests the wallet’s signature for the complete batch.
 These are output-only intents: they need no independent input signatures.
 This tests the wallet’s ability to parse and sign a nested transaction. It does
 not claim support for signing standalone input-bearing sub-transactions; that
-requires a wallet API beyond the Cometa RC1 browser-wallet interface.
+requires a wallet API beyond the Cometa browser-wallet interface.
 
 Returned key signatures are verified against the exact transaction body and
 checked for the required wallet input, collateral, guard and withdrawal keys.
@@ -66,9 +66,7 @@ For custom devnets, enter the reference Unix time in milliseconds, reference slo
 and slot duration under **Custom devnet slot timing**. Use the genesis settings
 of the network selected above. Public networks use their standard slot timing.
 
-RC1’s JSON transaction inspector omits some Dijkstra fields; the full CBOR is
-available for inspection. Successful construction and signing do not establish
-ledger acceptance. Submission requires a compatible node, provider and wallet,
+Successful construction and signing do not establish ledger acceptance. Submission requires a compatible node, provider and wallet,
 and current valid inputs/account state. Check the network explorer for confirmation.
 
 ## Tests
