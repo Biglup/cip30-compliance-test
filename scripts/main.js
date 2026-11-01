@@ -8,6 +8,7 @@
  */
 
 import * as ui from './ui.js';
+import { setupDijkstra, resetDijkstra } from './handlers/dijkstra-tests.js';
 import { state } from './app-state.js';
 import { detectWallets, waitForWallets } from './wallet-detector.js';
 import { connectWallet, disconnectWallet, isConnected } from './handlers/connect-handler.js';
@@ -86,6 +87,7 @@ const handleConnect = async () => {
 
     try {
         const connectionInfo = await connectWallet(walletName, network);
+        resetDijkstra();
 
         // Update UI for connected state
         ui.disconnectBtn.classList.remove('hidden');
@@ -108,6 +110,7 @@ const handleConnect = async () => {
  * Handle wallet disconnection
  */
 const handleDisconnect = () => {
+    resetDijkstra();
     disconnectWallet();
     ui.resetUI();
 };
@@ -142,6 +145,7 @@ const runTest = async (testFn, ...args) => {
  * Set up all event handlers
  */
 const setupEventHandlers = () => {
+    setupDijkstra();
     // Connection handlers
     ui.connectBtn.addEventListener('click', handleConnect);
     ui.disconnectBtn.addEventListener('click', handleDisconnect);
