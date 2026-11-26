@@ -8,7 +8,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="shortcut icon" href="favicon/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
-    <link rel="stylesheet" href="style.css?v=20261101-9">
+    <link rel="stylesheet" href="style.css?v=20261126-1">
 </head>
 <body>
     <div class="app-layout">
@@ -621,6 +621,119 @@
             </div>
         </section>
 
+        <section class="card hidden" id="cip209-section">
+            <h2>14. CIP-209 (Dijkstra connector extension)</h2>
+            <p class="section-description">Test the draft CIP-30 extension CIP-209: <code>getBalances</code>, <code>signSubTxs</code>, <code>balanceAndSignTx</code> and the amended <code>signTx</code>. The wallet must list <code>{ cip: 209 }</code> in <code>supportedExtensions</code> and expose <code>api.cip209</code>.</p>
+            <div class="status-box" id="cip209-status" role="status" aria-live="polite"></div>
+            <div class="form-group">
+                <label><input type="checkbox" id="cip209-network-mode"> Enable network submission (requires Dijkstra)</label>
+                <p class="test-description">Applies to the two cards that build with the transaction builder (signSubTxs and the wrap card). Requires the endpoint's protocol 12 parameters. Leave unchecked to test signing only with protocol 12 candidate parameters. Custom devnets use the slot timing entered in section 13.</p>
+            </div>
+            <div class="form-group">
+                <label><input type="checkbox" id="cip209-allow-wallet-submit"> Allow balanceAndSignTx (the wallet may submit a real transaction)</label>
+                <p class="test-description warning-text">balanceAndSignTx lets the WALLET decide whether to submit, and CIP-209 gives the dApp no flag to prevent it. Every balanceAndSignTx call in this section, including the raw call, stays disabled until this is checked.</p>
+            </div>
+            <div class="tx-test-card" id="cip209-get-balances-card">
+                <h3>getBalances</h3>
+                <p class="test-description">Read the wallet's UTxOs and the balance of each registered reward account in one call. Pagination applies to the UTxOs only; leave both fields blank to omit it.</p>
+                <div class="form-row">
+                    <div class="form-group"><label for="cip209-get-balances-page">Page (optional)</label><input id="cip209-get-balances-page" type="text" inputmode="numeric" placeholder="0"></div>
+                    <div class="form-group"><label for="cip209-get-balances-limit">Limit (optional)</label><input id="cip209-get-balances-limit" type="text" inputmode="numeric" placeholder="10"></div>
+                </div>
+                <div class="button-group">
+                    <button id="cip209-get-balances-call" class="btn btn-test">getBalances()</button>
+                </div>
+                <div class="test-result large" id="cip209-get-balances-result" role="status" aria-live="polite"></div>
+            </div>
+            <div class="tx-test-card" id="cip209-sign-subtxs-card">
+                <h3>signSubTxs over built intents</h3>
+                <p class="test-description">Build intents funded by this wallet: each spends one of its ADA-only UTxOs, pays the recipient, returns the change and requires the batcher's top-level guard. Sign them as a participant, then copy the signed subtransactions to the batcher's session and paste them into the wrap card there.</p>
+                <div class="form-group"><label for="cip209-sign-subtxs-count">Number of subtransactions (1-16)</label><input id="cip209-sign-subtxs-count" type="number" min="1" max="16" step="1" value="2"></div>
+                <div class="form-group"><label for="cip209-sign-subtxs-amount">Amount per subtransaction (ADA)</label><input id="cip209-sign-subtxs-amount" type="text" inputmode="decimal" value="2"></div>
+                <div class="form-group"><label for="cip209-sign-subtxs-recipient">Recipient (blank uses your change address)</label><input id="cip209-sign-subtxs-recipient" type="text" placeholder="addr_test1..."></div>
+                <div class="form-group"><label for="cip209-sign-subtxs-batcher">Batcher payment address (blank means this wallet)</label><input id="cip209-sign-subtxs-batcher" type="text" placeholder="addr_test1..."></div>
+                <div class="form-group">
+                    <label for="cip209-sign-subtxs-format">Format argument</label>
+                    <select id="cip209-sign-subtxs-format">
+                        <option value="">omitted (defaults to witnessSet)</option>
+                        <option value="witnessSet">"witnessSet"</option>
+                        <option value="full">"full"</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button id="cip209-sign-subtxs-build" class="btn btn-test">Build Subtransactions</button>
+                    <button id="cip209-sign-subtxs-sign" class="btn btn-secondary" disabled>signSubTxs()</button>
+                    <button id="cip209-sign-subtxs-use" class="btn btn-secondary" disabled>Copy Signed to Wrap Card</button>
+                </div>
+                <div class="form-group"><label for="cip209-sign-subtxs-cbor">Unsigned subtransaction CBOR (one per line)</label><textarea id="cip209-sign-subtxs-cbor" rows="3" readonly></textarea></div>
+                <div class="form-group"><label for="cip209-sign-subtxs-signed">Signed subtransaction CBOR (one per line, for the batcher)</label><textarea id="cip209-sign-subtxs-signed" rows="3" readonly></textarea></div>
+                <div class="test-result large" id="cip209-sign-subtxs-result" role="status" aria-live="polite"></div>
+            </div>
+            <div class="tx-test-card" id="cip209-wrap-card">
+                <h3>Wrap imported subtransactions (two-wallet flow)</h3>
+                <p class="test-description">Paste subtransactions signed by another wallet whose batcher is this wallet. The top-level transaction is funded by this wallet, carries them unchanged and adds this wallet's payment-key guard, so the wallet's review shows a counterparty's subtransaction. It is signed with plain <code>signTx</code>, which must refuse with TxSignError 7 when an imported subtransaction is not fully witnessed. Every input must already exist on chain: an imported subtransaction cannot spend an output of another one.</p>
+                <div class="form-group"><label for="cip209-wrap-subtxs">Imported subtransaction CBOR (hex, one per line)</label><textarea id="cip209-wrap-subtxs" rows="4" placeholder="83a3..."></textarea></div>
+                <div class="button-group">
+                    <button id="cip209-wrap-build" class="btn btn-test">Build Top-Level Transaction</button>
+                    <button id="cip209-wrap-sign" class="btn btn-secondary" disabled>signTx()</button>
+                    <button id="cip209-wrap-submit" class="btn btn-primary" disabled>Submit Transaction</button>
+                </div>
+                <div class="form-group"><label for="cip209-wrap-cbor">Transaction CBOR</label><textarea id="cip209-wrap-cbor" rows="3" readonly></textarea></div>
+                <div class="test-result large" id="cip209-wrap-result" role="status" aria-live="polite"></div>
+            </div>
+            <div class="tx-test-card" id="cip209-balance-sign-card">
+                <h3>balanceAndSignTx</h3>
+                <p class="test-description warning-text">THIS CALL MAY SUBMIT A REAL TRANSACTION. The wallet balances, signs and, when the result is complete, may submit without asking this page again. To hold a complete transaction back, the CIP directs dApps to plain signTx instead.</p>
+                <p class="test-description">Send an incomplete transaction with no inputs, a placeholder fee of 0 and no change. The subtransaction forms read the textarea of the wrap card.</p>
+                <div class="form-group">
+                    <label for="cip209-balance-sign-form">Input form</label>
+                    <select id="cip209-balance-sign-form">
+                        <option value="payment">Unbalanced payment (one output)</option>
+                        <option value="wrapper">Unbalanced top-level transaction carrying the imported subtransactions</option>
+                        <option value="bare">Bare subtransaction(s), no top-level transaction</option>
+                    </select>
+                </div>
+                <div class="form-group"><label for="cip209-balance-sign-recipient">Payment recipient (blank uses your change address)</label><input id="cip209-balance-sign-recipient" type="text" placeholder="addr_test1..."></div>
+                <div class="form-group"><label for="cip209-balance-sign-amount">Payment amount (ADA)</label><input id="cip209-balance-sign-amount" type="text" inputmode="decimal" value="2"></div>
+                <div class="button-group">
+                    <button id="cip209-balance-sign-build" class="btn btn-test">Build Unbalanced Request</button>
+                    <button id="cip209-balance-sign-call" class="btn btn-danger" disabled>balanceAndSignTx()</button>
+                </div>
+                <div class="form-group"><label for="cip209-balance-sign-cbor">Request CBOR</label><textarea id="cip209-balance-sign-cbor" rows="3" readonly></textarea></div>
+                <div class="form-group"><label for="cip209-balance-sign-returned">Returned transaction CBOR</label><textarea id="cip209-balance-sign-returned" rows="3" readonly></textarea></div>
+                <div class="test-result large" id="cip209-balance-sign-result" role="status" aria-live="polite"></div>
+            </div>
+            <div class="tx-test-card" id="cip209-raw-card">
+                <h3>Raw calls</h3>
+                <p class="test-description">Call a method with exactly the arguments given, as a JSON array, and see the raw result or the raw error object. Examples: <code>[]</code> or <code>[{"page":0,"limit":10}]</code> for getBalances, <code>[["83a3..."],"full"]</code> for signSubTxs, <code>["84a3..."]</code> for balanceAndSignTx, <code>["84a3...",true]</code> for signTx.</p>
+                <div class="form-group">
+                    <label for="cip209-raw-method">Method</label>
+                    <select id="cip209-raw-method">
+                        <option value="getBalances">cip209.getBalances</option>
+                        <option value="signSubTxs">cip209.signSubTxs</option>
+                        <option value="balanceAndSignTx">cip209.balanceAndSignTx (may submit)</option>
+                        <option value="signTx">signTx (amended)</option>
+                    </select>
+                </div>
+                <div class="form-group"><label for="cip209-raw-args">Arguments (JSON array)</label><textarea id="cip209-raw-args" rows="4">[]</textarea></div>
+                <p class="test-description">Malformed signSubTxs inputs. Each fills the form; the expected outcome is APIError InvalidRequest (-1).</p>
+                <div class="button-group" id="cip209-raw-presets">
+                    <button class="btn btn-secondary btn-small" data-preset="empty">Empty list</button>
+                    <button class="btn btn-secondary btn-small" data-preset="odd-hex">Odd-length hex</button>
+                    <button class="btn btn-secondary btn-small" data-preset="non-hex">Non-hex</button>
+                    <button class="btn btn-secondary btn-small" data-preset="trailing">Trailing bytes</button>
+                    <button class="btn btn-secondary btn-small" data-preset="indefinite">Indefinite-length array</button>
+                    <button class="btn btn-secondary btn-small" data-preset="format">Unknown format</button>
+                    <button class="btn btn-secondary btn-small" data-preset="too-many">17 entries</button>
+                </div>
+                <div class="test-result" id="cip209-raw-expected" role="status" aria-live="polite"></div>
+                <div class="button-group">
+                    <button id="cip209-raw-call" class="btn btn-test">Call</button>
+                </div>
+                <div class="test-result large" id="cip209-raw-result" role="status" aria-live="polite"></div>
+            </div>
+        </section>
+
         <footer class="footer">
             <a href="https://github.com/Biglup/cometa.js" target="_blank">
                 <span>Powered by</span>
@@ -633,6 +746,6 @@
 
     <!-- Cometa.js CDN -->
     <script src="https://unpkg.com/@biglup/cometa@2.0.0-rc.3/dist/iife/index.global.js"></script>
-    <script type="module" src="scripts/main.js?v=20261101-9"></script>
+    <script type="module" src="scripts/main.js?v=20261126-1"></script>
 </body>
 </html>

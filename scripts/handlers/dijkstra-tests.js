@@ -1,7 +1,7 @@
 /** Wallet compatibility checks and explicit Dijkstra build/sign/submit steps. */
 import { state } from '../app-state.js';
-import * as ui from '../ui.js?v=20261101-9';
-import { buildBatch, buildFeature, requireDijkstra, parseAda, buildParameters, verifyWalletWitnesses } from '../dijkstra.js?v=20261101-9';
+import * as ui from '../ui.js?v=20261126-1';
+import { buildBatch, buildFeature, requireDijkstra, parseAda, buildParameters, verifyWalletWitnesses } from '../dijkstra.js?v=20261126-1';
 
 const element = id => document.getElementById(`dijkstra-${id}`);
 const features = ['deposit', 'transfer', 'balances', 'key-guard', 'native-guard', 'batch'];
@@ -42,17 +42,19 @@ const requireWallet = () => {
     if (!state.wallet) throw new Error('Connect a wallet first.');
 };
 
-const context = async () => {
+/** Build context for the connected wallet; also used by the CIP-209 section, which shares the slot timing fields. */
+export const walletContext = async mode => {
     requireWallet();
     const wallet = state.wallet;
     const provider = state.provider;
     const params = await provider.getParameters();
-    const mode = element('network-mode').checked ? 'network' : 'compatibility';
     const buildParams = buildParameters(params, mode);
     const address = (await wallet.getChangeAddress()).toString();
     return { params: buildParams, mode, networkProtocol: params.protocolVersion?.major, slotConfig: slotConfig(), address, utxos: await wallet.getUnspentOutputs(),
         collateral: [] };
 };
+
+const context = () => walletContext(element('network-mode').checked ? 'network' : 'compatibility');
 
 const run = async (feature, action) => {
     if (busy) return;

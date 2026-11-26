@@ -66,6 +66,40 @@ of the network selected above. Public networks use their standard slot timing.
 Successful construction and signing do not establish ledger acceptance. Submission requires a compatible node, provider and wallet,
 and current valid inputs/account state. Check the network explorer for confirmation.
 
+## CIP-209 tests
+
+**CIP-209 (Dijkstra connector extension)** exercises the draft CIP-30 extension.
+On connection the page requests `{ cip: 209 }` when the wallet lists it in
+`supportedExtensions`, and the connection box shows whether the enabled API
+carries `cip209`. Without it the section stays disabled.
+
+- **getBalances:** optional page and limit; lists the UTxOs and the balance of
+  each reward account, and shows errors with their code and info.
+- **signSubTxs over built intents:** builds 1-16 subtransactions that each spend
+  one ADA-only wallet UTxO and require the batcher's top-level guard, signs them
+  with the chosen format argument and verifies every returned entry against the
+  subtransaction id.
+- **Wrap imported subtransactions:** builds the top-level transaction that
+  carries subtransactions pasted from another session and signs it with plain
+  `signTx`. When an imported subtransaction lacks a witness, the amended
+  `signTx` must refuse with TxSignError 7.
+- **balanceAndSignTx:** sends an unbalanced payment, an unbalanced wrapper or
+  bare subtransactions, then checks the returned object and transaction.
+- **Raw calls:** any of the four methods with JSON arguments, the raw result or
+  error object, and ready-made malformed `signSubTxs` inputs.
+
+Two-wallet flow: in wallet A's session, enter wallet B's payment address as the
+batcher (the change address B's session shows after connecting), build and sign
+with `signSubTxs`, and copy the signed CBOR. In wallet B's session, paste it
+into the wrap card, build, and sign. B's wallet then reviews a transaction that
+carries A's subtransactions. Every input must already exist on chain; a
+subtransaction cannot spend an output of another one.
+
+`balanceAndSignTx` lets the wallet submit, and the CIP gives the dApp no way to
+prevent that, so those calls stay disabled until **Allow balanceAndSignTx** is
+checked. **Enable network submission** in this section works as in the Dijkstra
+section and applies to the two cards that use the transaction builder.
+
 ## Tests
 
 ```sh
@@ -76,5 +110,6 @@ npm test
 Tests use the exact published Cometa candidate and Node’s test runner. They
 check encoded Dijkstra fields, native VM evaluation, balanced batches,
 independent intent signatures, wallet UI state transitions and failure paths.
+The CIP-209 section is tested against a mocked wallet API only.
 Synthetic ledger fixtures and public test keys are confined to automated tests;
 the page builds wallet transactions from the connected wallet’s UTxOs.

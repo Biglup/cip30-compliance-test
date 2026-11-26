@@ -20,6 +20,7 @@ export const txBuilderSection = document.getElementById('tx-builder-section');
 export const govTxSection = document.getElementById('gov-tx-section');
 export const rawTxSection = document.getElementById('raw-tx-section');
 export const dijkstraSection = document.getElementById('dijkstra-section');
+export const cip209Section = document.getElementById('cip209-section');
 
 // CIP-30 Basic test buttons
 export const testGetNetworkId = document.getElementById('test-getNetworkId');
@@ -259,6 +260,16 @@ export const clearTestResult = (elementId) => {
 };
 
 /**
+ * List each CIP extension this tool requests and whether the enabled API carries it
+ * @param {Object} extensions - Extension flags from the connection
+ * @returns {string} One line such as "CIP-95 yes, CIP-142 no, CIP-209 yes"
+ */
+const extensionSummary = (extensions = {}) =>
+    [[95, 'cip95'], [142, 'cip142'], [209, 'cip209']]
+        .map(([cip, key]) => `CIP-${cip} ${extensions[key] ? 'yes' : 'no'}`)
+        .join(', ');
+
+/**
  * Show connection status
  * @param {Object} info - Connection info object
  */
@@ -269,6 +280,7 @@ export const showConnectionStatus = (info) => {
         <div class="status-label">Connected to ${info.walletName}</div>
         <div class="status-value">Network: ${info.network} (ID: ${info.networkId})</div>
         <div class="status-value">Address: ${info.address}</div>
+        <div class="status-value">Extensions: ${extensionSummary(info.extensions)}</div>
     `;
 };
 
@@ -297,6 +309,7 @@ export const showTestSections = () => {
     complexSection.classList.remove('hidden');
     rawTxSection.classList.remove('hidden');
     dijkstraSection.classList.remove('hidden');
+    cip209Section?.classList.remove('hidden');
 };
 
 /**
@@ -315,6 +328,7 @@ export const hideTestSections = () => {
     complexSection.classList.add('hidden');
     rawTxSection.classList.add('hidden');
     dijkstraSection.classList.add('hidden');
+    cip209Section?.classList.add('hidden');
 };
 
 /**

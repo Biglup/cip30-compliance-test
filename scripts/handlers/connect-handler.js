@@ -9,7 +9,7 @@ import {
     normalizeProviderUrl,
 } from '../network-config.js';
 import * as ui from '../ui.js';
-import { getWalletByName, checkExtensionSupport } from '../wallet-detector.js';
+import { getWalletByName, checkExtensionSupport } from '../wallet-detector.js?v=20261126-1';
 
 // Blockfrost proxy URL (eliminates need for user API keys)
 const PROXY_URL = 'https://cardano-blockfrost-proxy.arcangelz.workers.dev/';
@@ -108,6 +108,9 @@ export const connectWallet = async (walletName, network) => {
     if (extensionSupport.cip142) {
         extensions.push({ cip: 142 });
     }
+    if (extensionSupport.cip209) {
+        extensions.push({ cip: 209 });
+    }
 
     // Enable wallet with extensions
     let cip30Api;
@@ -160,13 +163,19 @@ export const connectWallet = async (walletName, network) => {
     const actualExtensions = {
         cip95: !!(cip30Api?.cip95 || cip30Api?.experimental?.cip95),
         cip142: !!(cip30Api?.cip142 || cip30Api?.experimental?.cip142),
+        cip209: !!(cip30Api?.cip209 || cip30Api?.experimental?.cip209),
     };
 
     // Log connection summary
     const extList = [];
     if (actualExtensions.cip95) extList.push('CIP-95');
     if (actualExtensions.cip142) extList.push('CIP-142');
+    if (actualExtensions.cip209) extList.push('CIP-209');
     ui.log(`Connected to ${config.name} (ID: ${networkId})${extList.length ? `, extensions: ${extList.join(', ')}` : ''}`, 'success');
+
+    if (extensionSupport.cip209 && !actualExtensions.cip209) {
+        ui.log('Wallet lists CIP-209 in supportedExtensions but the enabled API has no cip209 namespace', 'warning');
+    }
 
     // Update state
     setState({
