@@ -155,6 +155,7 @@ export const checkExtensionSupport = (walletApi) => {
     const support = {
         cip95: false,
         cip142: false,
+        cip209: false,
     };
 
     if (!walletApi || !walletApi.supportedExtensions) {
@@ -166,6 +167,7 @@ export const checkExtensionSupport = (walletApi) => {
     if (Array.isArray(extensions)) {
         support.cip95 = extensions.some(ext => ext.cip === 95);
         support.cip142 = extensions.some(ext => ext.cip === 142);
+        support.cip209 = extensions.some(ext => ext.cip === 209);
     }
 
     return support;

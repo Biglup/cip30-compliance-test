@@ -7,11 +7,12 @@
  * - Binds all event handlers
  */
 
-import * as ui from './ui.js?v=20261101-9';
-import { setupDijkstra, resetDijkstra } from './handlers/dijkstra-tests.js?v=20261101-9';
+import * as ui from './ui.js?v=20261126-1';
+import { setupDijkstra, resetDijkstra } from './handlers/dijkstra-tests.js?v=20261126-1';
+import { setupCip209, refreshCip209 } from './handlers/cip209-tests.js?v=20261126-1';
 import { state } from './app-state.js';
-import { detectWallets, waitForWallets } from './wallet-detector.js';
-import { connectWallet, disconnectWallet, isConnected } from './handlers/connect-handler.js';
+import { detectWallets, waitForWallets } from './wallet-detector.js?v=20261126-1';
+import { connectWallet, disconnectWallet, isConnected } from './handlers/connect-handler.js?v=20261126-1';
 import * as cip30Tests from './handlers/cip30-tests.js';
 import * as cip95Tests from './handlers/cip95-tests.js';
 import * as txTests from './handlers/transaction-tests.js';
@@ -88,6 +89,7 @@ const handleConnect = async () => {
     try {
         const connectionInfo = await connectWallet(walletName, network);
         resetDijkstra();
+        refreshCip209();
 
         // Update UI for connected state
         ui.disconnectBtn.classList.remove('hidden');
@@ -112,6 +114,7 @@ const handleConnect = async () => {
 const handleDisconnect = () => {
     resetDijkstra();
     disconnectWallet();
+    refreshCip209();
     ui.resetUI();
 };
 
@@ -146,6 +149,7 @@ const runTest = async (testFn, ...args) => {
  */
 const setupEventHandlers = () => {
     setupDijkstra();
+    setupCip209();
     // Connection handlers
     ui.connectBtn.addEventListener('click', handleConnect);
     ui.disconnectBtn.addEventListener('click', handleDisconnect);

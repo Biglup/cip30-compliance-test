@@ -169,10 +169,10 @@ test('existing Conway transfer and native-mint handlers still build with the new
 });
 
 
-test('all twelve test sections appear together on connection and hide on disconnect', async () => {
+test('all thirteen test sections appear together on connection and hide on disconnect', async () => {
     const ui = await import('../scripts/ui.js');
     const sections = [...document.querySelectorAll('section.card')].filter(section => section.id !== 'connection-section');
-    assert.equal(sections.length, 12);
+    assert.equal(sections.length, 13);
     assert.ok(sections.every(section => section.classList.contains('hidden')));
     ui.showTestSections();
     assert.ok(sections.every(section => !section.classList.contains('hidden')));

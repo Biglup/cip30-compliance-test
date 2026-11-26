@@ -398,6 +398,35 @@ textarea {
     }
 }
 
+/* CIP-209 section */
+#cip209-section .form-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+#cip209-section .form-group {
+    min-width: 0;
+}
+
+#cip209-section .status-box {
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+}
+
+#cip209-section #cip209-raw-expected {
+    margin-bottom: var(--spacing-md);
+}
+
+.warning-text {
+    color: var(--danger-color);
+    font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    #cip209-section .form-row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 /* Buttons */
 .button-group {
     display: flex;

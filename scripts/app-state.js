@@ -39,6 +39,7 @@ export const state = {
     extensions: {
         cip95: false,
         cip142: false,
+        cip209: false,
     }
 };
 
@@ -79,6 +80,7 @@ export const resetState = () => {
     state.extensions = {
         cip95: false,
         cip142: false,
+        cip209: false,
     };
 };
 

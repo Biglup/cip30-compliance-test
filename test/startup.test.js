@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
 import * as C from '@biglup/cometa';
 
-test('mismatched Dijkstra markup does not prevent app initialization or existing wallet tests', async () => {
+test('mismatched Dijkstra or CIP-209 markup does not prevent app initialization or existing wallet tests', async () => {
     const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
     const dom = new JSDOM(html, { url: 'http://localhost/' });
     globalThis.window = dom.window;
@@ -13,15 +13,18 @@ test('mismatched Dijkstra markup does not prevent app initialization or existing
     window.cardano = { fixture: { name: 'Fixture wallet', apiVersion: '1', enable: async () => ({}) } };
     // Simulate an old HTML document that lacks a control required by the current script.
     document.getElementById('dijkstra-deposit-build').remove();
+    document.querySelector('#cip209-raw-presets [data-preset="trailing"]').remove();
     await C.ready();
     const entry = document.querySelector('script[type="module"]').getAttribute('src');
     assert.ok(new URL(entry, 'http://localhost/').searchParams.has('v'));
     await import(new URL(`../${entry}`, import.meta.url));
     await new Promise(resolve => setTimeout(resolve, 20));
     const log = document.getElementById('log-output');
-    assert.match(log.textContent, /Hard-refresh/);
+    assert.match(log.textContent, /Dijkstra page and scripts are out of date\. Hard-refresh/);
+    assert.match(log.textContent, /CIP-209 page and scripts are out of date\. Hard-refresh/);
     assert.match(log.textContent, /Cometa.js ready/);
     assert.ok([...document.querySelectorAll('#dijkstra-section button')].every(button => button.disabled));
+    assert.ok([...document.querySelectorAll('#cip209-section button')].every(button => button.disabled));
     document.getElementById('test-getNetworkId').click();
     assert.match(log.textContent, /Please connect a wallet first/);
     document.getElementById('disconnect-btn').click();
