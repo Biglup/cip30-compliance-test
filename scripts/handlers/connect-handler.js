@@ -9,7 +9,7 @@ import {
     normalizeProviderUrl,
 } from '../network-config.js';
 import * as ui from '../ui.js';
-import { getWalletByName, checkExtensionSupport } from '../wallet-detector.js?v=20261126-1';
+import { getWalletByName, checkExtensionSupport } from '../wallet-detector.js?v=20261127-1';
 
 // Blockfrost proxy URL (eliminates need for user API keys)
 const PROXY_URL = 'https://cardano-blockfrost-proxy.arcangelz.workers.dev/';

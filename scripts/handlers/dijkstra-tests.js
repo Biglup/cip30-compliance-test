@@ -1,7 +1,7 @@
 /** Wallet compatibility checks and explicit Dijkstra build/sign/submit steps. */
 import { state } from '../app-state.js';
-import * as ui from '../ui.js?v=20261126-1';
-import { buildBatch, buildFeature, requireDijkstra, parseAda, buildParameters, verifyWalletWitnesses } from '../dijkstra.js?v=20261126-1';
+import * as ui from '../ui.js?v=20261127-1';
+import { buildBatch, buildFeature, requireDijkstra, parseAda, buildParameters, verifyWalletWitnesses } from '../dijkstra.js?v=20261127-1';
 
 const element = id => document.getElementById(`dijkstra-${id}`);
 const features = ['deposit', 'transfer', 'balances', 'key-guard', 'native-guard', 'batch'];
@@ -78,6 +78,12 @@ const run = async (feature, action) => {
     }
 };
 
+/** The ADA amount of a field, or undefined when the field is left blank. */
+const optionalAda = (feature, name) => {
+    const value = field(feature, name).value.trim();
+    return value === '' ? undefined : parseAda(value);
+};
+
 const build = async feature => {
     resetTest(feature);
     const current = revisions.get(feature);
@@ -106,8 +112,9 @@ const build = async feature => {
             if (await state.provider.getRewardsBalance(sourceRewardAddress) < amount) throw new Error('The source reward account has insufficient balance.');
         }
         result = await buildFeature(Cometa, ctx, { feature, amount, rewardAddress, sourceRewardAddress,
-            ...(feature === 'balances' ? { lower: parseAda(field(feature, 'lower').value.trim()),
-                upper: parseAda(field(feature, 'upper').value.trim()), starting: parseAda(field(feature, 'starting').value.trim()) } : {}) });
+            ...(feature === 'balances' ? { lower: optionalAda(feature, 'lower'), upper: optionalAda(feature, 'upper'),
+                exact: optionalAda(feature, 'exact'), startingLower: optionalAda(feature, 'starting-lower'),
+                startingUpper: optionalAda(feature, 'starting-upper'), starting: optionalAda(feature, 'starting') } : {}) });
     }
     if (current !== revisions.get(feature) || wallet !== state.wallet) return;
     pending.set(feature, { cbor: result.cbor, signed: false, wallet, provider: state.provider, mode: ctx.mode, utxos: [...ctx.utxos, ...ctx.collateral] });
@@ -148,7 +155,8 @@ export const setupDijkstra = () => {
         'network-mode', 'zero-time', 'zero-slot', 'slot-length',
         ...features.flatMap(feature => ['card', 'build', 'sign', 'submit', 'cbor', 'result'].map(name => `${feature}-${name}`)),
         'deposit-reward', 'deposit-amount', 'transfer-reward', 'transfer-amount',
-        'balances-reward', 'balances-lower', 'balances-upper', 'balances-starting',
+        'balances-reward', 'balances-lower', 'balances-upper', 'balances-exact',
+        'balances-starting-lower', 'balances-starting-upper', 'balances-starting',
         'batch-count', 'batch-recipient', 'batch-amount',
     ];
     if (required.some(id => !element(id))) {

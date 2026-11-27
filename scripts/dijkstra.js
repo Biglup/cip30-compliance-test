@@ -14,6 +14,23 @@ export const parseAda = value => {
     return amount;
 };
 
+/**
+ * Builds one account balance interval from optional values. An exact balance
+ * stands alone; otherwise either bound may be left out. Returns undefined when
+ * nothing is given.
+ */
+export const balanceInterval = ({ lower, upper, exact }, name) => {
+    if (exact !== undefined) {
+        if (lower !== undefined || upper !== undefined) throw new Error(`${name}: use an exact balance or bounds, not both.`);
+        return { exact };
+    }
+    if (lower === undefined && upper === undefined) return undefined;
+    if (lower !== undefined && upper !== undefined && upper <= lower) {
+        throw new Error(`${name}: the upper balance bound must be greater than the lower bound.`);
+    }
+    return { ...(lower !== undefined && { inclusiveLowerBound: lower }), ...(upper !== undefined && { exclusiveUpperBound: upper }) };
+};
+
 export const requireDijkstra = params => {
     if (params.protocolVersion?.major !== 12) {
         throw new Error(`This candidate targets protocol 12; the endpoint reports ${params.protocolVersion?.major ?? 'unknown'}. Use a Dijkstra devnet.`);
@@ -83,7 +100,7 @@ export const buildBatch = async (C, context, { count, amount, recipient = contex
 };
 
 export const buildFeature = async (C, context, options) => {
-    const { feature, amount = 2_000_000n, rewardAddress, sourceRewardAddress, lower, upper, starting } = options;
+    const { feature, amount = 2_000_000n, rewardAddress, sourceRewardAddress, lower, upper, exact, startingLower, startingUpper, starting } = options;
     const plutus = feature === 'plutus-guard' || feature === 'deferred-mint';
     const builder = createBuilder(C, context, plutus);
     const details = [];
@@ -99,12 +116,15 @@ export const buildFeature = async (C, context, options) => {
                 builder.addDirectDeposit(rewardAddress, amount);
                 break;
             }
-            case 'balances':
+            case 'balances': {
                 C.RewardAddress.fromBech32(rewardAddress);
-                if (upper <= lower) throw new Error('The upper balance bound must be greater than the lower bound.');
-                builder.addAccountBalanceInterval(rewardAddress, { inclusiveLowerBound: lower, exclusiveUpperBound: upper })
-                    .addStartingAccountBalanceInterval(rewardAddress, { exact: starting });
+                const interval = balanceInterval({ lower, upper, exact }, 'Balance when the transaction runs');
+                const startingInterval = balanceInterval({ lower: startingLower, upper: startingUpper, exact: starting }, 'Balance at transaction start');
+                if (!interval && !startingInterval) throw new Error('Enter at least one balance bound or exact balance.');
+                if (interval) builder.addAccountBalanceInterval(rewardAddress, interval);
+                if (startingInterval) builder.addStartingAccountBalanceInterval(rewardAddress, startingInterval);
                 break;
+            }
             case 'key-guard':
                 builder.addGuard(paymentCredential(C, context.address));
                 break;
