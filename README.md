@@ -33,7 +33,7 @@ The **Enable network submission** checkbox controls the mode:
   parameters unchanged. Requires protocol 12. Build, sign and submit are separate actions.
 
 The test cards cover direct reward-account deposits, account-to-account
-transfers, execution-time and block-start balance constraints, key guards,
+transfers, execution-time and transaction-start balance constraints, key guards,
 and native `RequireGuard` minting.
 
 For account operations, use registered reward accounts. Transfers withdraw from

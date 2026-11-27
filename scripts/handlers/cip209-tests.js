@@ -1,11 +1,11 @@
 /** CIP-209 checks: getBalances, signSubTxs, the two-wallet wrap flow, balanceAndSignTx and raw calls. */
 import { state } from '../app-state.js';
-import * as ui from '../ui.js?v=20261126-1';
-import { parseAda, requireDijkstra, utxoId, verifyWalletWitnesses } from '../dijkstra.js?v=20261126-1';
-import { walletContext } from './dijkstra-tests.js?v=20261126-1';
+import * as ui from '../ui.js?v=20261127-1';
+import { parseAda, requireDijkstra, utxoId, verifyWalletWitnesses } from '../dijkstra.js?v=20261127-1';
+import { walletContext } from './dijkstra-tests.js?v=20261127-1';
 import { CIP209_METHODS, RAW_METHODS, buildIntents, buildUnbalancedPayment, buildUnbalancedWrapper, buildWrapper, checkBalanceResult,
     decodeBalances, encodeBareSubTransactions, errorDetails, formatError, inspectSubTransactions, malformedPresets, meetsExpectation,
-    missingSubTxWitnesses, stringify, verifySignedSubTxs } from '../cip209.js?v=20261126-1';
+    missingSubTxWitnesses, stringify, verifySignedSubTxs } from '../cip209.js?v=20261127-1';
 
 const element = id => document.getElementById(`cip209-${id}`);
 const field = (card, name) => element(`${card}-${name}`);

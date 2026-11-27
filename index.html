@@ -8,7 +8,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="shortcut icon" href="favicon/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
-    <link rel="stylesheet" href="style.css?v=20261126-1">
+    <link rel="stylesheet" href="style.css?v=20261127-1">
 </head>
 <body>
     <div class="app-layout">
@@ -570,11 +570,14 @@
             </div>
             <div class="tx-test-card" id="dijkstra-balances-card">
                 <h3>Account Balance Constraints</h3>
-                <p class="test-description">Test the account balance at execution and at the start of the block.</p>
+                <p class="test-description">Require a reward account balance when the transaction runs (key 26), at the start of the transaction before any sub-transaction runs (key 27), or both. Leave a field blank to leave it out; an exact balance replaces the bounds. Without sub-transactions both are checked against the same balance.</p>
                 <div class="form-group"><label for="dijkstra-balances-reward">Reward account</label><input id="dijkstra-balances-reward" type="text" placeholder="stake_test1…"></div>
                 <div class="form-group"><label for="dijkstra-balances-lower">Inclusive lower bound (ADA)</label><input id="dijkstra-balances-lower" type="text" inputmode="decimal" value="0"></div>
                 <div class="form-group"><label for="dijkstra-balances-upper">Exclusive upper bound (ADA)</label><input id="dijkstra-balances-upper" type="text" inputmode="decimal" value="100"></div>
-                <div class="form-group"><label for="dijkstra-balances-starting">Exact block-start balance (ADA)</label><input id="dijkstra-balances-starting" type="text" inputmode="decimal" value="0"></div>
+                <div class="form-group"><label for="dijkstra-balances-exact">Exact balance (ADA)</label><input id="dijkstra-balances-exact" type="text" inputmode="decimal" placeholder="blank = use the bounds"></div>
+                <div class="form-group"><label for="dijkstra-balances-starting-lower">At transaction start: inclusive lower bound (ADA)</label><input id="dijkstra-balances-starting-lower" type="text" inputmode="decimal" placeholder="blank = none"></div>
+                <div class="form-group"><label for="dijkstra-balances-starting-upper">At transaction start: exclusive upper bound (ADA)</label><input id="dijkstra-balances-starting-upper" type="text" inputmode="decimal" placeholder="blank = none"></div>
+                <div class="form-group"><label for="dijkstra-balances-starting">At transaction start: exact balance (ADA)</label><input id="dijkstra-balances-starting" type="text" inputmode="decimal" placeholder="blank = none"></div>
                 <div class="button-group">
                     <button id="dijkstra-balances-build" class="btn btn-test">Build Transaction</button>
                     <button id="dijkstra-balances-sign" class="btn btn-secondary" disabled>Sign Transaction</button>
@@ -746,6 +749,6 @@
 
     <!-- Cometa.js CDN -->
     <script src="https://unpkg.com/@biglup/cometa@2.0.0-rc.3/dist/iife/index.global.js"></script>
-    <script type="module" src="scripts/main.js?v=20261126-1"></script>
+    <script type="module" src="scripts/main.js?v=20261127-1"></script>
 </body>
 </html>

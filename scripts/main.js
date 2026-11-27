@@ -7,12 +7,12 @@
  * - Binds all event handlers
  */
 
-import * as ui from './ui.js?v=20261126-1';
-import { setupDijkstra, resetDijkstra } from './handlers/dijkstra-tests.js?v=20261126-1';
-import { setupCip209, refreshCip209 } from './handlers/cip209-tests.js?v=20261126-1';
+import * as ui from './ui.js?v=20261127-1';
+import { setupDijkstra, resetDijkstra } from './handlers/dijkstra-tests.js?v=20261127-1';
+import { setupCip209, refreshCip209 } from './handlers/cip209-tests.js?v=20261127-1';
 import { state } from './app-state.js';
-import { detectWallets, waitForWallets } from './wallet-detector.js?v=20261126-1';
-import { connectWallet, disconnectWallet, isConnected } from './handlers/connect-handler.js?v=20261126-1';
+import { detectWallets, waitForWallets } from './wallet-detector.js?v=20261127-1';
+import { connectWallet, disconnectWallet, isConnected } from './handlers/connect-handler.js?v=20261127-1';
 import * as cip30Tests from './handlers/cip30-tests.js';
 import * as cip95Tests from './handlers/cip95-tests.js';
 import * as txTests from './handlers/transaction-tests.js';

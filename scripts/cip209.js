@@ -1,5 +1,5 @@
 /** CIP-209 request builders, decoders and result checks shared by the page and integration tests. */
-import { createBuilder, paymentCredential, requireDijkstra, utxoId } from './dijkstra.js?v=20261126-1';
+import { createBuilder, paymentCredential, requireDijkstra, utxoId } from './dijkstra.js?v=20261127-1';
 
 export const CIP209_METHODS = ['getBalances', 'signSubTxs', 'balanceAndSignTx'];
 export const RAW_METHODS = [...CIP209_METHODS, 'signTx'];

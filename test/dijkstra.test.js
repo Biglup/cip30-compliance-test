@@ -39,6 +39,22 @@ test('both balance interval forms survive serialization', () => {
     assert.deepEqual([...body.get(27).values()], [0]);
 });
 
+test('each balance field is optional and an exact balance replaces the bounds', async () => {
+    const context = localContext(C);
+    const build = async options => decode((await buildFeature(C, context, { feature: 'balances', rewardAddress: context.rewardAddress, ...options })).cbor)[0];
+    const lowerOnly = await build({ lower: 5_000_000n });
+    assert.deepEqual([...lowerOnly.get(26).values()], [[5_000_000, null]]);
+    assert.equal(lowerOnly.has(27), false);
+    const exactOnly = await build({ exact: 7_000_000n });
+    assert.deepEqual([...exactOnly.get(26).values()], [7_000_000]);
+    const startingOnly = await build({ startingUpper: 9_000_000n });
+    assert.equal(startingOnly.has(26), false);
+    assert.deepEqual([...startingOnly.get(27).values()], [[null, 9_000_000]]);
+    await assert.rejects(build({}), /at least one/);
+    await assert.rejects(build({ exact: 1n, lower: 0n }), /not both/);
+    await assert.rejects(build({ startingLower: 2n, startingUpper: 2n }), /greater than/);
+});
+
 test('native guard policy requires the enclosing payment-key guard', () => {
     const [body, witnesses] = decode(results.get('native-guard').cbor);
     const [policy] = witnesses.get(1);
